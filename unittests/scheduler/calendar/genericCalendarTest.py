@@ -13,9 +13,6 @@ class SomeCalendar(GenericCalendar):
     def isBusinessDay(self, date: datetime.date) -> bool:
         pass
 
-    def getEndOfMonth(self, date: datetime.date) -> datetime.date:
-        pass
-
     def advance(
             self,
             date: datetime.date,
@@ -43,3 +40,11 @@ class GenericCalendarTest(TestCase):
                 False,
                 SomeCalendar.isEndOfMonth(datetime.date(2025, 11, 10))
             )
+
+    def testGetEndOfMonth(self):
+        with self.subTest('end of month'):
+            self.assertEqual(
+                datetime.date(2025, 11, 30),
+                SomeCalendar.getEndOfMonth(datetime.date(2025, 11, 10))
+            )
+

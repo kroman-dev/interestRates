@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import List
 
 import datetime
 
@@ -11,6 +12,10 @@ class GenericCalendar(ABC):
 
     def __init__(self, name: str):
         self._name = name
+        self._holidays: List[datetime.date] = []
+
+    def addHoliday(self, date: datetime.date) -> None:
+        self._holidays.append(date)
 
     @abstractmethod
     def isBusinessDay(self, date: datetime.date) -> bool:
@@ -22,9 +27,12 @@ class GenericCalendar(ABC):
             return True
         return False
 
-    @abstractmethod
-    def getEndOfMonth(self, date: datetime.date) -> datetime.date:
-        pass
+    @staticmethod
+    def getEndOfMonth(date: datetime.date) -> datetime.date:
+        newDate = date
+        while newDate.month == date.month:
+            newDate += datetime.timedelta(days=1)
+        return newDate - datetime.timedelta(days=1)
 
     @abstractmethod
     def advance(

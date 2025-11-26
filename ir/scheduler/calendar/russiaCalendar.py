@@ -14,15 +14,13 @@ class RussiaCalendar(GenericCalendar):
 
     def __init__(self):
         super().__init__(name='Russia')
+        self._holidays.append(datetime.date(2025, 11, 3))
+        self._holidays.append(datetime.date(2025, 11, 4))
 
     def isBusinessDay(self, date: datetime.date) -> bool:
-        return holidays_ru.check_holiday(date)
-
-    def isEndOfMonth(self, date: datetime.date) -> bool:
-        pass
-
-    def getEndOfMonth(self, date: datetime.date) -> datetime.date:
-        pass
+        if date in self._holidays:
+            return False
+        return not holidays_ru.check_holiday(date)
 
     def advance(
             self,
