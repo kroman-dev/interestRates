@@ -1,6 +1,11 @@
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 import datetime
+
+
+if TYPE_CHECKING:
+    from ir.scheduler.calendar.genericCalendar import GenericCalendar
 
 
 class BusinessDayConvention(ABC):
@@ -16,5 +21,8 @@ class BusinessDayConvention(ABC):
 
     @staticmethod
     @abstractmethod
-    def adjust(date: datetime.date) -> datetime.date:
+    def adjust(
+            date: datetime.date,
+            calendar: 'GenericCalendar'
+    ) -> datetime.date:
         pass

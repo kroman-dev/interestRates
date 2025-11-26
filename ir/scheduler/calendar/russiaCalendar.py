@@ -1,32 +1,29 @@
-from abc import ABC, abstractmethod
-
 import datetime
+try:
+    import holidays_ru
+except:
+    raise ImportError('Cant import holidays_ru -> install')
 
 from ir.scheduler.businessDayConvention.businessDayConvention import \
     BusinessDayConvention
+from ir.scheduler.calendar.genericCalendar import GenericCalendar
 from ir.scheduler.period.period import Period
 
 
-class GenericCalendar(ABC):
+class RussiaCalendar(GenericCalendar):
 
-    def __init__(self, name: str):
-        self._name = name
+    def __init__(self):
+        super().__init__(name='Russia')
 
-    @abstractmethod
     def isBusinessDay(self, date: datetime.date) -> bool:
+        return holidays_ru.check_holiday(date)
+
+    def isEndOfMonth(self, date: datetime.date) -> bool:
         pass
 
-    @staticmethod
-    def isEndOfMonth(date: datetime.date) -> bool:
-        if date.month != (date + datetime.timedelta(days=1)).month:
-            return True
-        return False
-
-    @abstractmethod
     def getEndOfMonth(self, date: datetime.date) -> datetime.date:
         pass
 
-    @abstractmethod
     def advance(
             self,
             date: datetime.date,
@@ -35,9 +32,3 @@ class GenericCalendar(ABC):
             endOfMonth: bool
     ):
         pass
-
-    def __str__(self):
-        return f'{self._name}Calendar'
-
-    def __repr__(self):
-        return self.__str__()
