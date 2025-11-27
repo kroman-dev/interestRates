@@ -8,7 +8,7 @@ class Period:
     _availableTenors = ['D', 'W', 'M', 'Q', 'S', 'Y']
 
     def __init__(self, period: str):
-        self._period = period
+        self._period = period.upper()
         self._timeDelta = self._getTimeDelta()
 
     def _getTimeDelta(self) -> relativedelta:
@@ -32,3 +32,13 @@ class Period:
 
     def advance(self, date: datetime.date) -> datetime.date:
         return date + self._timeDelta
+
+    def __radd__(self, date: datetime.date):
+        if isinstance(date, (datetime.date, datetime.datetime)):
+            return self.advance(date)
+        return NotImplemented('date must be datetime')
+
+    def __add__(self, date):
+        if isinstance(date, (datetime.date, datetime.datetime)):
+            return self.advance(date)
+        return NotImplemented

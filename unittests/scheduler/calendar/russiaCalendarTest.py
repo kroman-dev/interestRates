@@ -4,6 +4,7 @@ from unittest import TestCase
 
 from ir.scheduler.calendar.russiaCalendar import RussiaCalendar
 
+
 class RussiaCalendarTest(TestCase):
 
     def setUp(self):
