@@ -29,4 +29,14 @@ class RussiaCalendar(GenericCalendar):
             businessDayConvention: BusinessDayConvention,
             endOfMonth: bool
     ):
-        pass
+        result = businessDayConvention.adjust(
+            date=date + period,
+            calendar=self
+        )
+        if (result.month != (date + period).month) and endOfMonth:
+            raise NotImplementedError('warning case')
+
+        if endOfMonth:
+            return self.getEndOfMonth(result)
+
+        return result

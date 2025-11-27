@@ -42,6 +42,19 @@ class GenericCalendar(ABC):
             businessDayConvention: BusinessDayConvention,
             endOfMonth: bool
     ):
+        """
+
+        :param date:
+        :param period:
+        :param businessDayConvention:
+        :param endOfMonth:
+            Where the start date of a period is on the final business day of
+            a particular calendar month, the end date is on the final
+            business day of the end month (not necessarily the corresponding
+            date in the end month).
+        Ref:
+         [1] OpenGamma, Interest Rate Instruments and Market Conventions Guide
+        """
         pass
 
     def __str__(self):
