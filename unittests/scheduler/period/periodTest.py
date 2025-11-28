@@ -48,3 +48,10 @@ class PeriodTest(TestCase):
                 datetime.date(2025, 1, 8),
                 Period("1w") + self._testDate
             )
+
+    def testRetreat(self):
+        with self.subTest("1D"):
+            self.assertEqual(
+                datetime.date(2025, 1, 1),
+                datetime.date(2025, 1, 2) - Period("1D")
+            )

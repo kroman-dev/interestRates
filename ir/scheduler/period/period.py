@@ -33,12 +33,20 @@ class Period:
     def advance(self, date: datetime.date) -> datetime.date:
         return date + self._timeDelta
 
-    def __radd__(self, date: datetime.date):
+    def retreat(self, date: datetime.date) -> datetime.date:
+        return date - self._timeDelta
+
+    def __radd__(self, date: datetime.date) -> datetime.date:
         if isinstance(date, (datetime.date, datetime.datetime)):
             return self.advance(date)
         return NotImplemented('date must be datetime')
 
-    def __add__(self, date):
+    def __add__(self, date: datetime.date) -> datetime.date:
         if isinstance(date, (datetime.date, datetime.datetime)):
             return self.advance(date)
+        return NotImplemented
+
+    def __rsub__(self, date: datetime.date) -> datetime.date:
+        if isinstance(date, (datetime.date, datetime.datetime)):
+            return self.retreat(date)
         return NotImplemented
