@@ -27,7 +27,6 @@ class ShortBackTest(TestCase):
                 )
             )
 
-
         with self.subTest("1W"):
 
             self.assertListEqual(

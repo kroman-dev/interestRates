@@ -3,17 +3,53 @@ from abc import ABC, abstractmethod
 
 from ir.scheduler.businessDayConvention.businessDayConvention import \
     BusinessDayConvention
+from ir.scheduler.calendar.genericCalendar import GenericCalendar
+from ir.scheduler.schedule.scheduleData import ScheduleData
+from ir.scheduler.stubPeriod.genericStubPeriod import GenericStubPeriod
 
 
 class GenericSchedule(ABC):
 
-    @abstractmethod
-    def getSchedule(
+    def __init__(
             self,
             effectiveDate: date,
             terminationDate: date,
             frequency: str,
             businessDayConvention: BusinessDayConvention,
-            endOfMonth: bool
+            endOfMonth: bool,
+            stubPeriod: GenericStubPeriod,
+            calendar: GenericCalendar
     ):
+        self._effectiveDate = effectiveDate
+        self._terminationDate = terminationDate
+        self._frequency = frequency
+        self._businessDayConvention = businessDayConvention
+        self._endOfMonth = endOfMonth
+        self._stubPeriod = stubPeriod
+        self._calendar = calendar
+        self._schedule = self.getSchedule(
+                effectiveDate=effectiveDate,
+                terminationDate=terminationDate,
+                frequency=frequency,
+                businessDayConvention=businessDayConvention,
+                endOfMonth=endOfMonth,
+                stubPeriod=stubPeriod,
+                calendar=calendar
+        )
+
+    @staticmethod
+    @abstractmethod
+    def getSchedule(
+            effectiveDate: date,
+            terminationDate: date,
+            frequency: str,
+            businessDayConvention: BusinessDayConvention,
+            endOfMonth: bool,
+            stubPeriod: GenericStubPeriod,
+            calendar: GenericCalendar,
+            paymentLag: int = 0
+    ) -> ScheduleData:
         pass
+
+    def __repr__(self):
+        return self._schedule.__repr__()
