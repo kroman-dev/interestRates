@@ -38,6 +38,28 @@ class RussiaCalendarTest(TestCase):
             )
 
     def testAdvance(self):
+        with self.subTest("0D"):
+            self.assertEqual(
+                datetime.date(2025, 11, 17),
+                self._sampleRussiaCalendar.advance(
+                    date=datetime.date(2025, 11, 15),
+                    period=Period('0D'),
+                    businessDayConvention=Following,
+                    endOfMonth=False
+                )
+            )
+
+        with self.subTest("0D"):
+            self.assertEqual(
+                datetime.date(2025, 11, 14),
+                self._sampleRussiaCalendar.advance(
+                    date=datetime.date(2025, 11, 14),
+                    period=Period('0D'),
+                    businessDayConvention=Following,
+                    endOfMonth=False
+                )
+            )
+
         with self.subTest("endOfMonth=True"):
             self.assertEqual(
                 datetime.date(2025, 12, 31),
@@ -65,6 +87,51 @@ class RussiaCalendarTest(TestCase):
                 datetime.date(2025, 11, 24),
                 self._sampleRussiaCalendar.advance(
                     date=datetime.date(2025, 10, 23),
+                    period=Period('1M'),
+                    businessDayConvention=Following,
+                    endOfMonth=False
+                )
+            )
+
+    def testRetreat(self):
+        with self.subTest("0D"):
+            self.assertEqual(
+                datetime.date(2025, 11, 14),
+                self._sampleRussiaCalendar.retreat(
+                    date=datetime.date(2025, 11, 14),
+                    period=Period('0D'),
+                    businessDayConvention=Following,
+                    endOfMonth=False
+                )
+            )
+
+        with self.subTest("endOfMonth=True"):
+            self.assertEqual(
+                datetime.date(2025, 10, 31),
+                self._sampleRussiaCalendar.retreat(
+                    date=datetime.date(2025, 11, 14),
+                    period=Period('1M'),
+                    businessDayConvention=Following,
+                    endOfMonth=True
+                )
+            )
+
+        with self.subTest("endOfMonth=False"):
+            self.assertEqual(
+                datetime.date(2025, 10, 14),
+                self._sampleRussiaCalendar.retreat(
+                    date=datetime.date(2025, 11, 14),
+                    period=Period('1M'),
+                    businessDayConvention=Following,
+                    endOfMonth=False
+                )
+            )
+
+        with self.subTest("endOfMonth=False 2"):
+            self.assertEqual(
+                datetime.date(2025, 10, 20),
+                self._sampleRussiaCalendar.retreat(
+                    date=datetime.date(2025, 11, 18),
                     period=Period('1M'),
                     businessDayConvention=Following,
                     endOfMonth=False

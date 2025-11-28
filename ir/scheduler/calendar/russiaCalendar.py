@@ -40,3 +40,22 @@ class RussiaCalendar(GenericCalendar):
             return self.getEndOfMonth(result)
 
         return result
+
+    def retreat(
+            self,
+            date: datetime.date,
+            period: Period,
+            businessDayConvention: BusinessDayConvention,
+            endOfMonth: bool
+    ):
+        result = businessDayConvention.adjust(
+            date=date - period,
+            calendar=self
+        )
+        if (result.month != (date - period).month) and endOfMonth:
+            raise NotImplementedError('warning case')
+
+        if endOfMonth:
+            return self.getEndOfMonth(result)
+
+        return result

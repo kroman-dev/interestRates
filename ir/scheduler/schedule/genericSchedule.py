@@ -18,7 +18,8 @@ class GenericSchedule(ABC):
             businessDayConvention: BusinessDayConvention,
             endOfMonth: bool,
             stubPeriod: GenericStubPeriod,
-            calendar: GenericCalendar
+            calendar: GenericCalendar,
+            paymentLag: int = 0
     ):
         self._effectiveDate = effectiveDate
         self._terminationDate = terminationDate
@@ -27,19 +28,23 @@ class GenericSchedule(ABC):
         self._endOfMonth = endOfMonth
         self._stubPeriod = stubPeriod
         self._calendar = calendar
-        self._schedule = self.getSchedule(
+        self._schedule = self.createSchedule(
                 effectiveDate=effectiveDate,
                 terminationDate=terminationDate,
                 frequency=frequency,
                 businessDayConvention=businessDayConvention,
                 endOfMonth=endOfMonth,
                 stubPeriod=stubPeriod,
-                calendar=calendar
+                calendar=calendar,
+                paymentLag=paymentLag
         )
+
+    def getSchedule(self) -> ScheduleData:
+        return self._schedule
 
     @staticmethod
     @abstractmethod
-    def getSchedule(
+    def createSchedule(
             effectiveDate: date,
             terminationDate: date,
             frequency: str,
