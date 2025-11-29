@@ -1,7 +1,6 @@
+import datetime
 from abc import ABC, abstractmethod
 from typing import List
-
-import datetime
 
 from ir.scheduler.businessDayConvention.businessDayConvention import \
     BusinessDayConvention
@@ -15,6 +14,15 @@ class GenericCalendar(ABC):
     def __init__(self, name: str):
         self._name = name
         self._holidays: List[datetime.date] = []
+
+    def getLastMonthBusinessDay(
+            self,
+            date: datetime.date
+    ) -> datetime.date:
+        return ModifiedFollowing.adjust(
+            date=self.getEndOfMonth(date),
+            calendar=self
+        )
 
     def isLastMonthBusinessDay(self, date: datetime.date) -> bool:
         if not self.isBusinessDay(date):
@@ -49,8 +57,8 @@ class GenericCalendar(ABC):
     def getEndOfMonth(date: datetime.date) -> datetime.date:
         newDate = date
         while newDate.month == date.month:
-            newDate += datetime.timedelta(days=1)
-        return newDate - datetime.timedelta(days=1)
+            newDate += Period('1D')
+        return newDate - Period('1D')
 
     @abstractmethod
     def advance(

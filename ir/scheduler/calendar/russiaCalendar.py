@@ -16,6 +16,7 @@ class RussiaCalendar(GenericCalendar):
         super().__init__(name='Russia')
         self._holidays.append(datetime.date(2025, 11, 3))
         self._holidays.append(datetime.date(2025, 11, 4))
+        self._holidays.append(datetime.date(2025, 12, 31))
 
     def isBusinessDay(self, date: datetime.date) -> bool:
         if date in self._holidays:
@@ -29,16 +30,19 @@ class RussiaCalendar(GenericCalendar):
             businessDayConvention: BusinessDayConvention,
             endOfMonth: bool
     ):
+        """
+            # TODO think about eom and following case:
+            # https://quant.stackexchange.com/questions/73827/is-end-of-month-eom-rule-overrides-convention-rule-in-quantlib-schedule
+            # https://quant.stackexchange.com/questions/78641/is-end-of-month-eom-rule-overrides-unadjusted-convention-rule-in-quantlib
+        """
+        if endOfMonth:
+            if self.isLastMonthBusinessDay(date):
+                return self.getLastMonthBusinessDay(date + period)
 
         result = businessDayConvention.adjust(
             date=date + period,
             calendar=self
         )
-        if (result.month != (date + period).month) and endOfMonth:
-            raise NotImplementedError('warning case')
-
-        if endOfMonth:
-            return self.getEndOfMonth(result)
 
         return result
 
@@ -49,14 +53,13 @@ class RussiaCalendar(GenericCalendar):
             businessDayConvention: BusinessDayConvention,
             endOfMonth: bool
     ):
+        if endOfMonth:
+            if self.isLastMonthBusinessDay(date):
+                return self.getLastMonthBusinessDay(date - period)
+
         result = businessDayConvention.adjust(
             date=date - period,
             calendar=self
         )
-        if (result.month != (date - period).month) and endOfMonth:
-            raise NotImplementedError('warning case')
-
-        if endOfMonth:
-            return self.getEndOfMonth(result)
 
         return result
