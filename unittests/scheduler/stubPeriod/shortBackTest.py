@@ -1,8 +1,6 @@
 from unittest import TestCase
 from datetime import date
 
-from ir.scheduler.businessDayConvention.following import Following
-from ir.scheduler.calendar.russiaCalendar import RussiaCalendar
 from ir.scheduler.stubPeriod.shortBack import ShortBack
 
 
@@ -16,39 +14,33 @@ class ShortBackTest(TestCase):
         with self.subTest("simple 1M"):
             self.assertListEqual(
                 [
-                    date(2025, 2, 3),
-                    date(2025, 3, 3),
+                    date(2025, 2, 1),
+                    date(2025, 3, 1),
                     date(2025, 4, 1),
-                    date(2025, 5, 2),
-                    date(2025, 6, 2)
+                    date(2025, 5, 1),
+                    date(2025, 6, 1)
                 ],
-                ShortBack.makeSchedule(
+                ShortBack.makeUnadjustedSchedule(
                     startDate=self._startDate,
                     endDate=self._endDate,
-                    frequency='1M',
-                    calendar=RussiaCalendar(),
-                    businessDayConvention=Following(),
-                    endOfMonth=False
+                    frequency='1M'
                 )
             )
 
         with self.subTest("simple 1M"):
             self.assertListEqual(
                 [
-                    date(2025, 2, 3),
-                    date(2025, 3, 3),
+                    date(2025, 2, 1),
+                    date(2025, 3, 1),
                     date(2025, 4, 1),
-                    date(2025, 5, 2),
-                    date(2025, 6, 2),
-                    date(2025, 6, 16)
+                    date(2025, 5, 1),
+                    date(2025, 6, 1),
+                    date(2025, 6, 15)
                 ],
-                ShortBack.makeSchedule(
+                ShortBack.makeUnadjustedSchedule(
                     startDate=self._startDate,
                     endDate=date(2025, 6, 15),
-                    frequency='1M',
-                    calendar=RussiaCalendar(),
-                    businessDayConvention=Following(),
-                    endOfMonth=False
+                    frequency='1M'
                 )
             )
 
@@ -56,16 +48,13 @@ class ShortBackTest(TestCase):
             # TODO warning case?
             self.assertListEqual(
                 [
-                    date(2025, 1, 9),
-                    date(2025, 1, 9),
+                    date(2025, 1, 1),
+                    date(2025, 1, 8),
                     date(2025, 1, 10)
                 ],
-                ShortBack.makeSchedule(
+                ShortBack.makeUnadjustedSchedule(
                     startDate=date(2025, 1, 1),
                     endDate=date(2025, 1, 10),
-                    frequency='1W',
-                    calendar=RussiaCalendar(),
-                    businessDayConvention=Following(),
-                    endOfMonth=False
+                    frequency='1W'
                 )
             )

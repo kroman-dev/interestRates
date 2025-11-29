@@ -1,24 +1,22 @@
 from datetime import date
 from typing import List
 
-from ir.scheduler.businessDayConvention.businessDayConvention import \
-    BusinessDayConvention
-from ir.scheduler.calendar.genericCalendar import GenericCalendar
 from ir.scheduler.period.period import Period
 from ir.scheduler.stubPeriod.genericStubPeriod import GenericStubPeriod
+from ir.scheduler.stubPeriod.stubPeriodGenerationTypeEnum import \
+    StubPeriodGenerationTypeEnum
 
 
 class ShortBack(GenericStubPeriod):
 
+    _stubPeriodGenerationType = StubPeriodGenerationTypeEnum("back")
+
     @classmethod
-    def makeSchedule(
+    def makeUnadjustedSchedule(
             cls,
             startDate: date,
             endDate: date,
-            frequency: str,
-            calendar: GenericCalendar,
-            businessDayConvention: BusinessDayConvention,
-            endOfMonth: bool
+            frequency: str
     ) -> List[date]:
         rawSchedule = [startDate]
         referenceDate = startDate
@@ -30,11 +28,4 @@ class ShortBack(GenericStubPeriod):
 
         rawSchedule.append(endDate)
 
-        schedule = cls._adjustRawSchedule(
-            rawSchedule=rawSchedule,
-            calendar=calendar,
-            businessDayConvention=businessDayConvention,
-            endOfMonth=endOfMonth
-        )
-
-        return schedule
+        return rawSchedule

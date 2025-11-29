@@ -1,11 +1,14 @@
+import datetime
 from datetime import date
 from abc import ABC, abstractmethod
+from typing import List
 
 from ir.scheduler.businessDayConvention.businessDayConvention import \
     BusinessDayConvention
 from ir.scheduler.calendar.genericCalendar import GenericCalendar
 from ir.scheduler.schedule.scheduleData import ScheduleData
 from ir.scheduler.stubPeriod.genericStubPeriod import GenericStubPeriod
+from ir.scheduler.period.period import Period
 
 
 class GenericSchedule(ABC):
@@ -41,6 +44,51 @@ class GenericSchedule(ABC):
 
     def getSchedule(self) -> ScheduleData:
         return self._schedule
+
+    @staticmethod
+    def _adjustSchedule(
+            unadjustedSchedule: List[date],
+            calendar: GenericCalendar,
+            businessDayConvention: BusinessDayConvention,
+            endOfMonth: bool
+    ) -> List[date]:
+        effectiveDate = unadjustedSchedule[0]
+        terminationDate = unadjustedSchedule[-1]
+        schedule = []
+        for unadjustedDate in unadjustedSchedule[:-1]:
+            if endOfMonth and calendar.isLastMonthBusinessDay(effectiveDate):
+                adjustedDate = calendar.getLastMonthBusinessDay(unadjustedDate)
+            else:
+                adjustedDate = businessDayConvention.adjust(
+                    date=unadjustedDate,
+                    calendar=calendar
+                )
+
+            schedule.append(adjustedDate)
+
+        # termination date case
+        if endOfMonth and calendar.isLastMonthBusinessDay(effectiveDate) \
+                and (effectiveDate.day == terminationDate.day):
+            schedule.append(
+                businessDayConvention.adjust(
+                    date=calendar.getLastMonthBusinessDay(
+                        unadjustedSchedule[-1]
+                    ),
+                    calendar=calendar
+                )
+            )
+        else:
+            schedule.append(
+                businessDayConvention.adjust(
+                    date=unadjustedSchedule[-1],
+                    calendar=calendar
+                )
+            )
+
+        if (schedule[0] == schedule[-1]) and (len(schedule) != 1):
+            raise ValueError("Schedule is not correct")
+
+        return schedule
 
     @staticmethod
     @abstractmethod
