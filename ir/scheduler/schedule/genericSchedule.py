@@ -1,4 +1,3 @@
-import datetime
 from datetime import date
 from abc import ABC, abstractmethod
 from typing import List
@@ -8,7 +7,6 @@ from ir.scheduler.businessDayConvention.businessDayConvention import \
 from ir.scheduler.calendar.genericCalendar import GenericCalendar
 from ir.scheduler.schedule.scheduleData import ScheduleData
 from ir.scheduler.stubPeriod.genericStubPeriod import GenericStubPeriod
-from ir.scheduler.period.period import Period
 
 
 class GenericSchedule(ABC):

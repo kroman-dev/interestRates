@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
+from datetime import date
 
 
 class GenericDayCounter(ABC):
 
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def yearFraction(startDate, endDate):
+    def yearFraction(cls, startDate: date, endDate: date) -> float:
         pass
