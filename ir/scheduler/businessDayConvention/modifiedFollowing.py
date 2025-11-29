@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING
 
 import datetime
 
-from ir.scheduler.period.period import Period
 from ir.scheduler.businessDayConvention.following import Following
 from ir.scheduler.businessDayConvention.preceding import Preceding
 from ir.scheduler.businessDayConvention.businessDayConvention \

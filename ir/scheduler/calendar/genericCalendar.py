@@ -5,6 +5,8 @@ import datetime
 
 from ir.scheduler.businessDayConvention.businessDayConvention import \
     BusinessDayConvention
+from ir.scheduler.businessDayConvention.modifiedFollowing import \
+    ModifiedFollowing
 from ir.scheduler.period.period import Period
 
 
@@ -13,6 +15,22 @@ class GenericCalendar(ABC):
     def __init__(self, name: str):
         self._name = name
         self._holidays: List[datetime.date] = []
+
+    def isLastMonthBusinessDay(self, date: datetime.date) -> bool:
+        if not self.isBusinessDay(date):
+            return False
+        if self.isBusinessDay(date + Period('1D')) \
+                and ((date + Period('1D')).month == date.month):
+            return False
+        if self.isBusinessDay(date) and self.isEndOfMonth(date):
+            return True
+        if ModifiedFollowing.adjust(
+                date=date + Period('1D'),
+                calendar=self
+        ) == date:
+            return True
+
+        return False
 
     def addHoliday(self, date: datetime.date) -> None:
         self._holidays.append(date)
@@ -23,7 +41,7 @@ class GenericCalendar(ABC):
 
     @staticmethod
     def isEndOfMonth(date: datetime.date) -> bool:
-        if date.month != (date + datetime.timedelta(days=1)).month:
+        if date.month != (date + Period('1D')).month:
             return True
         return False
 

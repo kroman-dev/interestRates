@@ -137,3 +137,25 @@ class RussiaCalendarTest(TestCase):
                     endOfMonth=False
                 )
             )
+
+    def testIsLastMonthBusinessDay(self):
+        with self.subTest("28.11.2025"):
+            self.assertTrue(
+                self._sampleRussiaCalendar.isLastMonthBusinessDay(
+                    datetime.date(2025, 11, 28)
+                )
+            )
+
+        with self.subTest("29.11.2025"):
+            self.assertFalse(
+                self._sampleRussiaCalendar.isLastMonthBusinessDay(
+                    datetime.date(2025, 11, 29)
+                )
+            )
+
+        with self.subTest("15.11.2025"):
+            self.assertFalse(
+                self._sampleRussiaCalendar.isLastMonthBusinessDay(
+                    datetime.date(2025, 11, 15)
+                )
+            )

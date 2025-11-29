@@ -29,6 +29,7 @@ class RussiaCalendar(GenericCalendar):
             businessDayConvention: BusinessDayConvention,
             endOfMonth: bool
     ):
+
         result = businessDayConvention.adjust(
             date=date + period,
             calendar=self
