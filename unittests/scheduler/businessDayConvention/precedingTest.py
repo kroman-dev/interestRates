@@ -6,7 +6,7 @@ from ir.scheduler.businessDayConvention.preceding import Preceding
 from ir.scheduler.calendar.russiaCalendar import RussiaCalendar
 
 
-class PeriodTest(TestCase):
+class PrecedingTest(TestCase):
 
     def setUp(self):
         self._testDate = datetime.date(2025, 11, 23)
