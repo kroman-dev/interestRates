@@ -36,6 +36,13 @@ class PeriodTest(TestCase):
                 self._testDate + Period("1w")
             )
 
+        with self.subTest("period sum"):
+            newPeriod = Period("2w") + Period("1w")
+            self.assertEqual(
+                datetime.date(2025, 1, 22),
+                self._testDate + newPeriod
+            )
+
     def testLeftAdd(self):
         with self.subTest("1D"):
             self.assertEqual(
