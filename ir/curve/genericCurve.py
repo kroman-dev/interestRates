@@ -3,6 +3,8 @@ from datetime import date
 from typing import List
 
 from ir.curve.interpolator.genericInterpolator import GenericInterpolator
+from ir.projectTyping.floatOrVectorType import FloatOrVectorType
+from ir.projectTyping.floatVectorType import FloatVectorType
 
 
 class GenericCurve(ABC):
@@ -10,7 +12,7 @@ class GenericCurve(ABC):
     def __init__(
             self,
             dates: List[date],
-            values: List[float],
+            values: FloatVectorType,
             interpolator: GenericInterpolator
     ):
         self._dates = dates
@@ -21,5 +23,5 @@ class GenericCurve(ABC):
         self._interpolator = newInterpolator
 
     @abstractmethod
-    def __call__(self, x: date) -> float:
+    def __call__(self, x: date) -> FloatOrVectorType:
         pass
