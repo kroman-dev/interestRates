@@ -2,8 +2,8 @@ import datetime
 from abc import ABC, abstractmethod
 from typing import List
 
-from ir.scheduler.businessDayConvention.businessDayConvention import \
-    BusinessDayConvention
+from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
+    GenericBusinessDayConvention
 from ir.scheduler.businessDayConvention.modifiedFollowing import \
     ModifiedFollowing
 from ir.scheduler.period.period import Period
@@ -65,7 +65,7 @@ class GenericCalendar(ABC):
             self,
             date: datetime.date,
             period: Period,
-            businessDayConvention: BusinessDayConvention,
+            businessDayConvention: GenericBusinessDayConvention,
             endOfMonth: bool
     ):
         """

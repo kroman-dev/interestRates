@@ -3,14 +3,14 @@ from typing import TYPE_CHECKING
 import datetime
 
 from ir.scheduler.period.period import Period
-from ir.scheduler.businessDayConvention.businessDayConvention \
-    import BusinessDayConvention
+from ir.scheduler.businessDayConvention.genericBusinessDayConvention \
+    import GenericBusinessDayConvention
 
 if TYPE_CHECKING:
     from ir.scheduler.calendar.genericCalendar import GenericCalendar
 
 
-class Preceding(BusinessDayConvention):
+class Preceding(GenericBusinessDayConvention):
 
     @staticmethod
     def adjust(

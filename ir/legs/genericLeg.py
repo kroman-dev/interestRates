@@ -8,5 +8,6 @@ class GenericLeg(ABC):
     def __init__(
             self,
             schedule: GenericSchedule,
+
     ):
         pass

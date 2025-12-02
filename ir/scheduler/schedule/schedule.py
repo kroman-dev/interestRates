@@ -1,7 +1,7 @@
 from datetime import date
 
-from ir.scheduler.businessDayConvention.businessDayConvention import \
-    BusinessDayConvention
+from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
+    GenericBusinessDayConvention
 from ir.scheduler.calendar.genericCalendar import GenericCalendar
 from ir.scheduler.period.period import Period
 from ir.scheduler.schedule.genericSchedule import GenericSchedule
@@ -18,7 +18,7 @@ class Schedule(GenericSchedule):
             effectiveDate: date,
             terminationDate: date,
             frequency: str,
-            businessDayConvention: BusinessDayConvention,
+            businessDayConvention: GenericBusinessDayConvention,
             endOfMonth: bool,
             stubPeriod: GenericStubPeriod,
             calendar: GenericCalendar,
@@ -41,7 +41,7 @@ class Schedule(GenericSchedule):
             effectiveDate: date,
             terminationDate: date,
             frequency: str,
-            businessDayConvention: BusinessDayConvention,
+            businessDayConvention: GenericBusinessDayConvention,
             endOfMonth: bool,
             stubPeriod: GenericStubPeriod,
             calendar: GenericCalendar,

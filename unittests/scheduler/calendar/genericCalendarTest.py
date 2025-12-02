@@ -2,8 +2,8 @@ import datetime
 
 from unittest import TestCase
 
-from ir.scheduler.businessDayConvention.businessDayConvention import \
-    BusinessDayConvention
+from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
+    GenericBusinessDayConvention
 from ir.scheduler.calendar.genericCalendar import GenericCalendar
 from ir.scheduler.period.period import Period
 
@@ -17,7 +17,7 @@ class SomeCalendar(GenericCalendar):
             self,
             date: datetime.date,
             period: Period,
-            businessDayConvention: BusinessDayConvention,
+            businessDayConvention: GenericBusinessDayConvention,
             endOfMonth: bool
     ):
         pass

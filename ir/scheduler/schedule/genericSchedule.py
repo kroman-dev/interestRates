@@ -2,8 +2,8 @@ from datetime import date
 from abc import ABC, abstractmethod
 from typing import List
 
-from ir.scheduler.businessDayConvention.businessDayConvention import \
-    BusinessDayConvention
+from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
+    GenericBusinessDayConvention
 from ir.scheduler.calendar.genericCalendar import GenericCalendar
 from ir.scheduler.schedule.scheduleData import ScheduleData
 from ir.scheduler.stubPeriod.genericStubPeriod import GenericStubPeriod
@@ -16,7 +16,7 @@ class GenericSchedule(ABC):
             effectiveDate: date,
             terminationDate: date,
             frequency: str,
-            businessDayConvention: BusinessDayConvention,
+            businessDayConvention: GenericBusinessDayConvention,
             endOfMonth: bool,
             stubPeriod: GenericStubPeriod,
             calendar: GenericCalendar,
@@ -47,7 +47,7 @@ class GenericSchedule(ABC):
     def _adjustSchedule(
             unadjustedSchedule: List[date],
             calendar: GenericCalendar,
-            businessDayConvention: BusinessDayConvention,
+            businessDayConvention: GenericBusinessDayConvention,
             endOfMonth: bool
     ) -> List[date]:
         effectiveDate = unadjustedSchedule[0]
@@ -94,7 +94,7 @@ class GenericSchedule(ABC):
             effectiveDate: date,
             terminationDate: date,
             frequency: str,
-            businessDayConvention: BusinessDayConvention,
+            businessDayConvention: GenericBusinessDayConvention,
             endOfMonth: bool,
             stubPeriod: GenericStubPeriod,
             calendar: GenericCalendar,

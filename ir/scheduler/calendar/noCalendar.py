@@ -1,7 +1,7 @@
 import datetime
 
-from ir.scheduler.businessDayConvention.businessDayConvention import \
-    BusinessDayConvention
+from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
+    GenericBusinessDayConvention
 from ir.scheduler.calendar.genericCalendar import GenericCalendar
 from ir.scheduler.period.period import Period
 
@@ -20,7 +20,7 @@ class NoCalendar(GenericCalendar):
             self,
             date: datetime.date,
             period: Period,
-            businessDayConvention: BusinessDayConvention,
+            businessDayConvention: GenericBusinessDayConvention,
             endOfMonth: bool
     ):
         if endOfMonth and self.isLastMonthBusinessDay(date):
@@ -37,7 +37,7 @@ class NoCalendar(GenericCalendar):
             self,
             date: datetime.date,
             period: Period,
-            businessDayConvention: BusinessDayConvention,
+            businessDayConvention: GenericBusinessDayConvention,
             endOfMonth: bool
     ):
         if endOfMonth and self.isLastMonthBusinessDay(date):

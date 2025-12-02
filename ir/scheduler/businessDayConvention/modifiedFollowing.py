@@ -4,14 +4,14 @@ import datetime
 
 from ir.scheduler.businessDayConvention.following import Following
 from ir.scheduler.businessDayConvention.preceding import Preceding
-from ir.scheduler.businessDayConvention.businessDayConvention \
-    import BusinessDayConvention
+from ir.scheduler.businessDayConvention.genericBusinessDayConvention \
+    import GenericBusinessDayConvention
 
 if TYPE_CHECKING:
     from ir.scheduler.calendar.genericCalendar import GenericCalendar
 
 
-class ModifiedFollowing(BusinessDayConvention):
+class ModifiedFollowing(GenericBusinessDayConvention):
 
     @staticmethod
     def adjust(

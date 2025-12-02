@@ -4,8 +4,8 @@ try:
 except:
     raise ImportError('Cant import holidays_ru -> install')
 
-from ir.scheduler.businessDayConvention.businessDayConvention import \
-    BusinessDayConvention
+from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
+    GenericBusinessDayConvention
 from ir.scheduler.calendar.genericCalendar import GenericCalendar
 from ir.scheduler.period.period import Period
 
@@ -27,7 +27,7 @@ class RussiaCalendar(GenericCalendar):
             self,
             date: datetime.date,
             period: Period,
-            businessDayConvention: BusinessDayConvention,
+            businessDayConvention: GenericBusinessDayConvention,
             endOfMonth: bool
     ):
         """
@@ -49,7 +49,7 @@ class RussiaCalendar(GenericCalendar):
             self,
             date: datetime.date,
             period: Period,
-            businessDayConvention: BusinessDayConvention,
+            businessDayConvention: GenericBusinessDayConvention,
             endOfMonth: bool
     ):
         if endOfMonth and self.isLastMonthBusinessDay(date):

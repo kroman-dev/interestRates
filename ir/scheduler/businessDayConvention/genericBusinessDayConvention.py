@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from ir.scheduler.calendar.genericCalendar import GenericCalendar
 
 
-class BusinessDayConvention(ABC):
+class GenericBusinessDayConvention(ABC):
 
     """
         A business day convention is a convention for adjustment of dates when
