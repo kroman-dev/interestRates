@@ -16,10 +16,19 @@ class GenericLeg(ABC):
             businessDayConvention: GenericBusinessDayConvention,
             dayCounter: GenericDayCounter
     ):
+        self._curve = curve
         self._schedule = schedule
         self._scheduleData = self._schedule.getSchedule()
         self._businessDayConvention = businessDayConvention
         self._dayCounter = dayCounter
+
+        self._accrualYearFractions = [
+            self._dayCounter.yearFraction(startDate=startDate, endDate=endDate)
+            for startDate, endDate in zip(
+                self._scheduleData.accrualStartDates,
+                self._scheduleData.accrualEndDates
+            )
+        ]
 
     @abstractmethod
     def getCashFlows(self):

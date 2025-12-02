@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from ir.scheduler.calendar.genericCalendar import GenericCalendar
 
 
-class NoConventionGeneric(GenericBusinessDayConvention):
+class NoConvention(GenericBusinessDayConvention):
 
     @staticmethod
     def adjust(

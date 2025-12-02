@@ -1,3 +1,6 @@
+import numpy as np
+
+from ir.curve.discountCurve import DiscountCurve
 from ir.legs.genericLeg import GenericLeg
 from ir.dayCounter.genericDayCounter import GenericDayCounter
 from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
@@ -9,33 +12,29 @@ class FixedLeg(GenericLeg):
 
     def __init__(
             self,
+            fixedRate: float,
+            curve: DiscountCurve,
             schedule: GenericSchedule,
             businessDayConvention: GenericBusinessDayConvention,
             dayCounter: GenericDayCounter
     ):
         super().__init__(
+            curve=curve,
             schedule=schedule,
             businessDayConvention=businessDayConvention,
             dayCounter=dayCounter
         )
-
-        accrualYearFractions = [
-            self._dayCounter.yearFraction(startDate=startDate, endDate=endDate)
-            for startDate, endDate in zip(
-                self._scheduleData.accrualStartDates,
-                self._scheduleData.accrualEndDates
-            )
-        ]
-        paymentYearFractions = [
-            self._dayCounter.yearFraction(startDate=startDate, endDate=endDate)
-            for startDate, endDate in zip(
-                self._scheduleData.accrualStartDates,
-                self._scheduleData.paymentDates
-            )
-        ]
+        self._fixedRate = fixedRate
 
     def getCashFlows(self):
-        pass
+        cashFlows = []
+        for periodIndex, accrual in enumerate(self._accrualYearFractions):
+            cashFlows.append(
+                self._curve.getDiscountFactor(
+                    self._scheduleData.paymentDates[periodIndex]
+                ) * accrual * self._fixedRate
+            )
+        return cashFlows
 
     def npv(self) -> float:
-        pass
+        return np.sum(self.getCashFlows())
