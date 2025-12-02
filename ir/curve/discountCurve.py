@@ -21,9 +21,9 @@ class DiscountCurve(GenericCurve):
         super().__init__(
             dates=dates,
             values=discountFactors,
-            interpolator=interpolator,
+            dayCounter=dayCounter,
+            interpolator=interpolator
         )
-        self._dayCounter = dayCounter
         if (1. - discountFactors[0]) > 1e-15:
             raise Exception('First value must be 1.')
         self._curveDate = dates[0]

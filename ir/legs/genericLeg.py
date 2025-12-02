@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import numpy as np
+
 from ir.curve.discountCurve import DiscountCurve
 from ir.dayCounter.genericDayCounter import GenericDayCounter
 from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
@@ -34,6 +36,5 @@ class GenericLeg(ABC):
     def getCashFlows(self):
         pass
 
-    @abstractmethod
     def npv(self) -> float:
-        pass
+        return np.sum(self.getCashFlows())

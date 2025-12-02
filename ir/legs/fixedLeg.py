@@ -35,6 +35,3 @@ class FixedLeg(GenericLeg):
                 ) * accrual * self._fixedRate
             )
         return cashFlows
-
-    def npv(self) -> float:
-        return np.sum(self.getCashFlows())
