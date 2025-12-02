@@ -19,9 +19,16 @@ class GenericCurve(ABC):
         self._values = values
         self._interpolator = interpolator
 
+    @abstractmethod
+    def _interpolate(self, x: date) -> FloatOrVectorType:
+        pass
+
+    @abstractmethod
+    def getDiscountFactor(self, x: date) -> FloatOrVectorType:
+        pass
+
     def setInterpolator(self, newInterpolator: GenericInterpolator):
         self._interpolator = newInterpolator
 
-    @abstractmethod
     def __call__(self, x: date) -> FloatOrVectorType:
-        pass
+        return self._interpolate(x)
