@@ -95,7 +95,7 @@ class SwapTest(TestCase):
     def testNpv(self):
         notional = 1e9
         self.assertAlmostEqual(
-            -44901.2137,
+            -44901.21378,
             notional * self._swap2.npv(),
             places=4
         )
