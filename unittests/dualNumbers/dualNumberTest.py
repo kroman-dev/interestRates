@@ -106,3 +106,28 @@ class DualNumberTest(TestCase):
                 DualNumber(realPart=0., dualPart={'x': -2., 'y': 1.5}),
                 3. - self._dualNumber
             )
+
+    def testMul(self):
+
+        self.assertEqual(
+            DualNumber(
+                realPart=6.,
+                dualPart={
+                    'x': 2. * 3. + 4. * 2.,
+                    'y': -1.5 * 2.,
+                    'z': -1.5 * 3.
+                }
+            ),
+            DualNumber(realPart=2., dualPart={'x': 2., 'z': -1.5}) \
+            * DualNumber(realPart=3., dualPart={'x': 4., 'y': -1.5})
+        )
+
+    def testConjugate(self):
+        self.assertEqual(
+            DualNumber(
+                realPart=3.,
+                dualPart={'x': -2., 'y': 1.5}
+            ),
+            self._dualNumber.conjugate()
+        )
+

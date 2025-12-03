@@ -17,6 +17,13 @@ class DualNumber:
             1) negation: -z = -a - b \epsilon
             2) equality: z_1=z_2 => a_1=a_2 and b_1=b_2
             3) addition: z_1 + z_2 = (a_1 + a_2) + (b_1 + b_2) \epsilon
+            4) subtraction: z_1 - z_2 = a_1 - a_2 + (b_1 - b_2) \epsilon
+            5) multiplication: z_1 * z_2 =
+                            = a_1 * a_2 + (b_1 * a_2 + b_2 * a_1) \epsilon
+            6) conjugate: \overline{z_1} = a_1 - b_1 \epsilon
+            7) division: z_1 / z_2 = \cfrac{
+                    a_1 * a_2 + (b_1 * a_2 - b_2 * a_1)\epsilon
+                }{a_2 **2 }
         """
         self._realPart = realPart
         self._dualPart = {} if dualPart is None else dualPart.copy()
@@ -69,3 +76,34 @@ class DualNumber:
 
     def __rsub__(self, other) -> 'DualNumber':
         return -(self - other)
+
+    def __mul__(self, other: Any) -> 'DualNumber':
+        if isinstance(other, DualNumber):
+            newDualPart = {
+                key: value * other.realPart
+                for key, value in self.dualPart.items()
+            }
+            for otherKey, otherValue in other.dualPart.items():
+                otherDualTerm = self.realPart * other.dualPart[otherKey]
+                newDualPart[otherKey] = otherDualTerm \
+                    if newDualPart.get(otherKey) is None \
+                    else newDualPart.get(otherKey) + otherDualTerm
+
+            return DualNumber(
+                realPart=self.realPart * other.realPart,
+                dualPart=newDualPart
+            )
+
+        return DualNumber(
+            realPart=self.realPart * other,
+            dualPart={key: value*other for key, value in self.dualPart.items()}
+        )
+
+    def __rmul__(self, other) -> 'DualNumber':
+        return self.__mul__(other)
+
+    def conjugate(self) -> 'DualNumber':
+        return DualNumber(
+            realPart=self.realPart,
+            dualPart={key: -value for key, value in self.dualPart.items()}
+        )
