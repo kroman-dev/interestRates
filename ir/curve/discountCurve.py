@@ -5,6 +5,7 @@ from ir.curve.genericCurve import GenericCurve
 from ir.curve.interpolator.genericInterpolator import GenericInterpolator
 from ir.curve.interpolator.logLinearInterpolator import LogLinearInterpolator
 from ir.dayCounter.genericDayCounter import GenericDayCounter
+from ir.dualNumbers.dualNumber import DualNumber
 from ir.projectTyping.floatOrVectorType import FloatOrVectorType
 from ir.projectTyping.floatVectorType import FloatVectorType
 
@@ -24,7 +25,10 @@ class DiscountCurve(GenericCurve):
             dayCounter=dayCounter,
             interpolator=interpolator
         )
-        if (1. - discountFactors[0]) > 1e-15:
+        if isinstance(discountFactors[0], DualNumber):
+            if (1. - discountFactors[0].realPart) > 1e-15:
+                raise Exception('First value must be 1.')
+        elif (1. - discountFactors[0]) > 1e-15:
             raise Exception('First value must be 1.')
         self._curveDate = dates[0]
 

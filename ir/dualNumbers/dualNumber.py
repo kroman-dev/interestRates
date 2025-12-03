@@ -44,6 +44,18 @@ class DualNumber:
     def dualPart(self) -> Optional[Dict[str, float]]:
         return self._dualPart
 
+    def __str__(self):
+        output = f"    f ={self.realPart: .6f} \n"
+        for key, value in self.dualPart.items():
+            output += f"df/d{key} ={self.dualPart[key]: .4f} \n"
+        return output
+
+    def __repr__(self):
+        dualNumberRepresentation = str(self.realPart)
+        for key, value in self.dualPart.items():
+            dualNumberRepresentation += f" + {value: .3f}{key}"
+        return dualNumberRepresentation
+
     def __neg__(self) -> 'DualNumber':
             return DualNumber(
                 realPart=-self.realPart,

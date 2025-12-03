@@ -1,4 +1,4 @@
-import numpy as np
+from ir.dualNumbers.dualFunctions import log, exp
 
 from ir.curve.interpolator.genericInterpolator import GenericInterpolator
 from ir.curve.interpolator.linearInterpolator import LinearInterpolator
@@ -15,9 +15,9 @@ class LogLinearInterpolator(GenericInterpolator):
         self._linearInterpolator = LinearInterpolator(
             x1=self._x1,
             x2=self._x2,
-            y1=np.log(self._y1),
-            y2=np.log(self._y2)
+            y1=log(self._y1),
+            y2=log(self._y2)
         )
 
     def _interpolate(self, x: FloatOrVectorType) -> FloatOrVectorType:
-        return np.exp(self._linearInterpolator(x))
+        return exp(self._linearInterpolator(x))
