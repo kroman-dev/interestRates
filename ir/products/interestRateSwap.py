@@ -13,7 +13,9 @@ from ir.scheduler.stubPeriod.genericStubPeriod import GenericStubPeriod
 
 
 class InterestRateSwap(Swap):
-
+    """
+        IMM vanilla IRS
+    """
     def __init__(
             self,
             curve: DiscountCurve,
@@ -67,3 +69,6 @@ class InterestRateSwap(Swap):
                 notional=notional
             )
         )
+
+    def getFixRate(self) -> float:
+        return self._payLeg.getFixRate()

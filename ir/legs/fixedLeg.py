@@ -1,5 +1,3 @@
-import numpy as np
-
 from ir.curve.discountCurve import DiscountCurve
 from ir.legs.genericLeg import GenericLeg
 from ir.dayCounter.genericDayCounter import GenericDayCounter
@@ -28,6 +26,9 @@ class FixedLeg(GenericLeg):
             notional=notional
         )
         self._fixedRate = fixedRate
+
+    def getFixRate(self) -> float:
+        return self._fixedRate
 
     def getCashFlows(self) -> FloatVectorType:
 
