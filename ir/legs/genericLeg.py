@@ -41,8 +41,9 @@ class GenericLeg(ABC):
             self,
             curve: Optional[DiscountCurve] = None
     ) -> FloatVectorType:
+        _curve = self._curve if curve is None else curve
         return np.array([
-            curve.getForwardRate(
+            _curve.getForwardRate(
                 periodStart=startDate,
                 periodEnd=endDate
             )
@@ -52,9 +53,13 @@ class GenericLeg(ABC):
             )
         ])
 
-    def _getDiscountFactors(self, curve: DiscountCurve) -> FloatVectorType:
+    def _getDiscountFactors(
+            self,
+            curve: Optional[DiscountCurve] = None
+    ) -> FloatVectorType:
+        _curve = self._curve if curve is None else curve
         return np.array([
-            curve.getDiscountFactor(paymentDate)
+            _curve.getDiscountFactor(paymentDate)
             for paymentDate in self._scheduleData.paymentDates
         ])
 

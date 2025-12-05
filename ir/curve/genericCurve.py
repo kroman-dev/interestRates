@@ -17,6 +17,8 @@ class GenericCurve(ABC):
             dayCounter: GenericDayCounter,
             interpolator: GenericInterpolator
     ):
+        if len(dates) != len(values):
+            raise ValueError('different length between dates and values')
         self._dates = dates
         self._values = values
         self._dayCounter = dayCounter

@@ -63,6 +63,55 @@ class SwapTest(TestCase):
             notional=self.notional
         )
 
+        dates = [
+            date(2022, 1, 1),
+            date(2023, 1, 1),
+            date(2024, 1, 1),
+            date(2027, 1, 1),
+            date(2032, 1, 1)
+        ]
+
+        self._initialGuessCurve = DiscountCurve(
+            dates=dates,
+            discountFactors=[1. for _ in dates],
+            dayCounter=self._dayCounter
+        )
+
+        self._targetCurve = DiscountCurve(
+            dates=dates,
+            discountFactors=[
+                1.,
+                0.9880446596186105,
+                0.9680183694743251,
+                0.9105211762541432,
+                0.8254636028183167
+            ],
+            dayCounter=self._dayCounter
+        )
+
+        self._fixedRates = [
+            quote / 100 for quote in [1.210, 1.635, 1.885, 1.930]
+        ]
+
+        createSwap = lambda fixedRate, terminationDate: InterestRateSwap(
+            curve=self._initialGuessCurve,
+            fixedRate=fixedRate,
+            effectiveDate=date(2022, 1, 1),
+            terminationDate=terminationDate,
+            fixFrequency='1Y',
+            floatFrequency='1Y',
+            endOfMonth=self._endOfMonth,
+            businessDayConvention=self._businessDayConvention,
+            dayCounter=self._dayCounter,
+            stubPeriod=self._stubPeriod,
+            calendar=self._calendar,
+            notional=1.
+        )
+        self._swaps = [
+            createSwap(fixRate, endDate)
+            for fixRate, endDate in zip(self._fixedRates, dates[1:])
+        ]
+
     def testParRate(self):
         with self.subTest("par rate from book"):
             self.assertAlmostEqual(
@@ -89,6 +138,15 @@ class SwapTest(TestCase):
                 )
             )
 
+        for swap in self._swaps:
+            with self.subTest(f"{swap.getFixRate()}"):
+                self.assertAlmostEqual(
+                    swap.getFixRate(),
+                    swap.getParRate(self._targetCurve)
+                )
+
+
+
     def testNpv(self):
         with self.subTest('internal'):
             self.assertAlmostEqual(
@@ -100,14 +158,24 @@ class SwapTest(TestCase):
         with self.subTest('external'):
             self.assertAlmostEqual(
                 -self.notional * self._swap2._payLeg.getFixRate() \
-                    * self._swap2._payLeg._accrualYearFractions[0],
+                * self._swap2._payLeg._accrualYearFractions[0],
                 self._swap2.npv(
                     DiscountCurve(
-                        dates=[date(2022, 1, 1), date(2022, 4, 1),
-                               date(2022, 7, 1)],
+                        dates=[
+                            date(2022, 1, 1),
+                            date(2022, 4, 1),
+                            date(2022, 7, 1)
+                        ],
                         discountFactors=[1., 1., 1.],
                         dayCounter=self._dayCounter
                     )
                 ),
                 places=4
             )
+
+        for swap in self._swaps:
+            with self.subTest(f"{swap.getFixRate()}"):
+                self.assertAlmostEqual(
+                    0.,
+                    swap.npv(self._targetCurve)
+                )

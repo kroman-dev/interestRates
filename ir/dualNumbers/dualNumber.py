@@ -31,7 +31,7 @@ class DualNumber:
                 }{a_2 **2 }
             8) exponential: e^z = e^a * (1 + b * \epsilon)
             9) ln: ln(z) = ln(a) + b / a * \epsilon
-            10) power: z^n = a^n + n * a * (n-1) * b * \epsilon
+            10) power: z^n = a^n + n * a ** (n-1) * b * \epsilon
         """
         self._realPart = realPart
         self._dualPart = {} if dualPart is None else dualPart.copy()

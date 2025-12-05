@@ -20,9 +20,11 @@ class Swap:
         The forward swap rate that RFS(fixRate) = 0
             Brigo ex. (1.25) p.15
         """
+        # TODO add simple test to fix assert bug with payLeg.discount
         return self._receiveLeg.npv(curve) / np.sum(
-            self._payLeg._discountFactors * self._payLeg._accrualYearFractions
+            self._payLeg._getDiscountFactors(curve) * self._payLeg._accrualYearFractions
         ) / self._payLeg._notional
 
     def getFixRate(self) -> float:
+        # TODO payLeg may dont have getFixRate method
         return self._payLeg.getFixRate()
