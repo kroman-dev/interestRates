@@ -13,13 +13,15 @@ class FloatingLeg(GenericLeg):
             curve: DiscountCurve,
             schedule: GenericSchedule,
             businessDayConvention: GenericBusinessDayConvention,
-            dayCounter: GenericDayCounter
+            dayCounter: GenericDayCounter,
+            notional: float = 1.
     ):
         super().__init__(
             curve=curve,
             schedule=schedule,
             businessDayConvention=businessDayConvention,
-            dayCounter=dayCounter
+            dayCounter=dayCounter,
+            notional=notional
         )
 
     def getCashFlows(self):

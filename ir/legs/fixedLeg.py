@@ -16,18 +16,22 @@ class FixedLeg(GenericLeg):
             curve: DiscountCurve,
             schedule: GenericSchedule,
             businessDayConvention: GenericBusinessDayConvention,
-            dayCounter: GenericDayCounter
+            dayCounter: GenericDayCounter,
+            notional: float = 1.
     ):
         super().__init__(
             curve=curve,
             schedule=schedule,
             businessDayConvention=businessDayConvention,
-            dayCounter=dayCounter
+            dayCounter=dayCounter,
+            notional=notional
         )
         self._fixedRate = fixedRate
 
     def getCashFlows(self):
         cashFlows = []
+
+        # self._notional * self._fixedRate * np.
         for periodIndex, accrual in enumerate(self._accrualYearFractions):
             cashFlows.append(
                 self._curve.getDiscountFactor(

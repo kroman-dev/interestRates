@@ -16,13 +16,15 @@ class GenericLeg(ABC):
             curve: DiscountCurve,
             schedule: GenericSchedule,
             businessDayConvention: GenericBusinessDayConvention,
-            dayCounter: GenericDayCounter
+            dayCounter: GenericDayCounter,
+            notional: float,
     ):
         self._curve = curve
         self._schedule = schedule
         self._scheduleData = self._schedule.getSchedule()
         self._businessDayConvention = businessDayConvention
         self._dayCounter = dayCounter
+        self._notional = notional
 
         self._accrualYearFractions = [
             self._dayCounter.yearFraction(startDate=startDate, endDate=endDate)
