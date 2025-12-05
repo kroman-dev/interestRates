@@ -3,10 +3,7 @@ from unittest import TestCase
 
 from ir.curve.discountCurve import DiscountCurve
 from ir.dayCounter.act365Fixed import Act365Fixed
-from ir.legs.fixedLeg import FixedLeg
-from ir.legs.floatingLeg import FloatingLeg
 from ir.products.interestRateSwap import InterestRateSwap
-from ir.products.swap import Swap
 from ir.scheduler.businessDayConvention.noConvention import NoConvention
 from ir.scheduler.calendar.noCalendar import NoCalendar
 from ir.scheduler.stubPeriod.shortBack import ShortBack

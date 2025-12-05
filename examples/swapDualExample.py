@@ -86,15 +86,19 @@ if __name__ == '__main__':
         notional = 1e9
         print(swap.npv() * notional)
 
-        InterestRateSwap(
-            curve=curve,
-            effectiveDate=effectiveDate,
-            terminationDate=terminationDate,
-            fixFrequency='4M',
-            floatFrequency='1M',
-            endOfMonth=False,
-            businessDayConvention=businessDayConvention,
-            dayCounter=dayCounter,
-            stubPeriod=stubPeriod,
-            calendar=calendar
+        print(
+            InterestRateSwap(
+                curve=curve,
+                fixedRate=1.15 / 100,
+                effectiveDate=effectiveDate,
+                terminationDate=terminationDate,
+                fixFrequency='4M',
+                floatFrequency='1M',
+                endOfMonth=False,
+                businessDayConvention=businessDayConvention,
+                dayCounter=dayCounter,
+                stubPeriod=stubPeriod,
+                calendar=calendar,
+                notional=notional
+            ).npv()
         )
