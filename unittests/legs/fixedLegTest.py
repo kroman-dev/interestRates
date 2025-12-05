@@ -2,6 +2,8 @@ from datetime import date
 from unittest import TestCase
 from unittest.mock import Mock
 
+import numpy as np
+
 from ir.curve.discountCurve import DiscountCurve
 from ir.dayCounter.thirty360BondBasis import Thirty360BondBasis
 from ir.legs.fixedLeg import FixedLeg
@@ -48,7 +50,8 @@ class FixedLegTest(TestCase):
         )
 
     def testCashFlows(self):
-        self.assertListEqual(
+
+        np.testing.assert_array_almost_equal(
             [0.1875, 0.125],
             self._fixedLeg.getCashFlows()
         )
