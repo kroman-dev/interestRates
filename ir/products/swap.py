@@ -1,3 +1,6 @@
+from typing import Optional
+
+from ir.curve.discountCurve import DiscountCurve
 from ir.legs.genericLeg import GenericLeg
 
 
@@ -7,5 +10,5 @@ class Swap:
         self._receiveLeg = receiveLeg
         self._payLeg = payLeg
 
-    def npv(self) -> float:
-        return self._receiveLeg.npv() - self._payLeg.npv()
+    def npv(self, curve: Optional[DiscountCurve] = None) -> float:
+        return self._receiveLeg.npv(curve) - self._payLeg.npv(curve)

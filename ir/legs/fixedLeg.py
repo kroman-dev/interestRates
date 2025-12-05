@@ -1,3 +1,7 @@
+from typing import Optional
+
+import numpy as np
+
 from ir.curve.discountCurve import DiscountCurve
 from ir.legs.genericLeg import GenericLeg
 from ir.dayCounter.genericDayCounter import GenericDayCounter
@@ -30,7 +34,17 @@ class FixedLeg(GenericLeg):
     def getFixRate(self) -> float:
         return self._fixedRate
 
-    def getCashFlows(self) -> FloatVectorType:
+    def getCashFlows(
+            self,
+            curve: Optional[DiscountCurve] = None
+    ) -> FloatVectorType:
+        discountFactors = self._discountFactors
+
+        if curve is not None:
+            discountFactors = np.array([
+                curve.getDiscountFactor(paymentDate)
+                for paymentDate in self._scheduleData.paymentDates
+            ])
 
         return self._notional * self._fixedRate \
-            * self._accrualYearFractions * self._discountFactors
+            * self._accrualYearFractions * discountFactors

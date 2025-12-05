@@ -1,4 +1,4 @@
-import numpy as np
+from typing import Optional
 
 from ir.curve.discountCurve import DiscountCurve
 from ir.dayCounter.genericDayCounter import GenericDayCounter
@@ -26,18 +26,18 @@ class FloatingLeg(GenericLeg):
             dayCounter=dayCounter,
             notional=notional
         )
-        self._forwardRates = np.array([
-            self._curve.getForwardRate(
-                periodStart=startDate,
-                periodEnd=endDate
-            )
-            for startDate, endDate in zip(
-                self._scheduleData.accrualStartDates,
-                self._scheduleData.accrualEndDates,
-            )
-        ])
+        self._forwardRates = self._getForwardRates(curve)
 
+    def getCashFlows(
+            self,
+            curve: Optional[DiscountCurve] = None
+    ) -> FloatVectorType:
+        forwardRates = self._forwardRates
+        discountFactors = self._discountFactors
 
-    def getCashFlows(self) -> FloatVectorType:
-        return self._notional * self._forwardRates \
-                    * self._discountFactors * self._accrualYearFractions
+        if curve is not None:
+            forwardRates = self._getForwardRates(curve)
+            discountFactors = self._getDiscountFactors(curve)
+
+        return self._notional * forwardRates \
+                    * discountFactors * self._accrualYearFractions

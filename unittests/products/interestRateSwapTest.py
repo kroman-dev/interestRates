@@ -31,7 +31,7 @@ class SwapTest(TestCase):
         # parRate from book
         fixedRatePar = 1.1362747 / 100
         fixedSomeRate = 1.15 / 100
-        notional = 1e9
+        self.notional = 1e9
 
         self._swap1 = InterestRateSwap(
             curve=self._curve,
@@ -60,7 +60,7 @@ class SwapTest(TestCase):
             dayCounter=self._dayCounter,
             stubPeriod=self._stubPeriod,
             calendar=self._calendar,
-            notional=notional
+            notional=self.notional
         )
 
     def testParRate(self):
@@ -70,9 +70,24 @@ class SwapTest(TestCase):
         )
 
     def testNpv(self):
+        with self.subTest('internal'):
+            self.assertAlmostEqual(
+                -44901.21378,
+                self._swap2.npv(),
+                places=4
+            )
 
-        self.assertAlmostEqual(
-            -44901.21378,
-            self._swap2.npv(),
-            places=4
-        )
+        with self.subTest('external'):
+            self.assertAlmostEqual(
+                -self.notional * self._swap2._payLeg.getFixRate() \
+                    * self._swap2._payLeg._accrualYearFractions[0],
+                self._swap2.npv(
+                    DiscountCurve(
+                        dates=[date(2022, 1, 1), date(2022, 4, 1),
+                               date(2022, 7, 1)],
+                        discountFactors=[1., 1., 1.],
+                        dayCounter=self._dayCounter
+                    )
+                ),
+                places=4
+            )

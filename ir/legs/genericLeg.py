@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 import numpy as np
 
@@ -34,14 +35,35 @@ class GenericLeg(ABC):
                 self._scheduleData.accrualEndDates
             )
         ])
-        self._discountFactors = np.array([
-            self._curve.getDiscountFactor(paymentDate)
+        self._discountFactors = self._getDiscountFactors(self._curve)
+
+    def _getForwardRates(
+            self,
+            curve: Optional[DiscountCurve] = None
+    ) -> FloatVectorType:
+        return np.array([
+            curve.getForwardRate(
+                periodStart=startDate,
+                periodEnd=endDate
+            )
+            for startDate, endDate in zip(
+                self._scheduleData.accrualStartDates,
+                self._scheduleData.accrualEndDates,
+            )
+        ])
+
+    def _getDiscountFactors(self, curve: DiscountCurve) -> FloatVectorType:
+        return np.array([
+            curve.getDiscountFactor(paymentDate)
             for paymentDate in self._scheduleData.paymentDates
         ])
 
     @abstractmethod
-    def getCashFlows(self) -> FloatVectorType:
+    def getCashFlows(
+            self,
+            curve: Optional[DiscountCurve] = None
+    ) -> FloatVectorType:
         pass
 
-    def npv(self) -> float:
-        return np.sum(self.getCashFlows())
+    def npv(self, curve: Optional[DiscountCurve] = None) -> float:
+        return np.sum(self.getCashFlows(curve))
