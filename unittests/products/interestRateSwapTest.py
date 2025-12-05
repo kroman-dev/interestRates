@@ -29,13 +29,13 @@ class SwapTest(TestCase):
         )
 
         # parRate from book
-        fixedRatePar = 1.1362747 / 100
+        self._fixedRatePar = 1.1362747 / 100
         fixedSomeRate = 1.15 / 100
         self.notional = 1e9
 
         self._swap1 = InterestRateSwap(
             curve=self._curve,
-            fixedRate=fixedRatePar,
+            fixedRate=self._fixedRatePar,
             effectiveDate=self._effectiveDate,
             terminationDate=self._terminationDate,
             fixFrequency=self._fixFrequency,
@@ -64,10 +64,30 @@ class SwapTest(TestCase):
         )
 
     def testParRate(self):
-        self.assertAlmostEqual(
-            0.,
-            self._swap1.npv()
-        )
+        with self.subTest("par rate from book"):
+            self.assertAlmostEqual(
+                0.,
+                self._swap1.npv()
+            )
+
+        with self.subTest("get numerical par rate"):
+            self.assertAlmostEqual(
+                self._fixedRatePar,
+                self._swap2.getParRate()
+            )
+
+        with self.subTest("get numerical par rate"):
+            self.assertAlmostEqual(
+                0.,
+                self._swap2.getParRate(
+                    DiscountCurve(
+                        dates=[date(2022, 1, 1), date(2022, 4, 1),
+                               date(2022, 7, 1)],
+                        discountFactors=[1., 1., 1.],
+                        dayCounter=self._dayCounter
+                    )
+                )
+            )
 
     def testNpv(self):
         with self.subTest('internal'):

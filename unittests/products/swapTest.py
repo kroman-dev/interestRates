@@ -97,7 +97,6 @@ class SwapTest(TestCase):
         )
 
     def testNpv(self):
-
         self.assertAlmostEqual(
             -44901.21378,
             self._swap2.npv(),

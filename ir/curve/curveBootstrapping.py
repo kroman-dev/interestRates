@@ -1,6 +1,8 @@
 from datetime import date
 from typing import List, Dict
 
+import numpy as np
+
 from ir.curve.discountCurve import DiscountCurve
 from ir.curve.interpolator.genericInterpolator import GenericInterpolator
 from ir.curve.interpolator.logLinearInterpolator import LogLinearInterpolator
@@ -32,6 +34,10 @@ class CurveBootstrapping:
             dayCounter=dayCounter,
             interpolator=curveInterpolator
         )
+        self._swapsParRates = np.array([
+            swap.getFixRate() for swap in self._swaps
+        ]).transpose()
+
         self._status = 'unknown'
         self._solverMethodName = "GaussNewton"
         if len(list(self._initialGuessNodes.keys()))  == len(swaps):
@@ -43,3 +49,12 @@ class CurveBootstrapping:
             self._solverMethodName = "LevenbergMarquardt"
         else:
             raise ValueError('Cant specify curve')
+
+    def _calculateMetrics(self, curve: DiscountCurve):
+        self._parRatesFromCurve = np.array([
+            swap.getParRate(curve) for swap in self._swaps
+        ]).transpose()
+        self._discountFactors = np.array([
+            self._initialDiscountCurve._values
+        ])[1:].transpose()
+        self._objective

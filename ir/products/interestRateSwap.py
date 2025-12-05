@@ -69,6 +69,3 @@ class InterestRateSwap(Swap):
                 notional=notional
             )
         )
-
-    def getFixRate(self) -> float:
-        return self._payLeg.getFixRate()
