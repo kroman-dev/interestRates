@@ -1,4 +1,4 @@
-import math
+import numpy as np
 
 from ir.dualNumbers.dualNumber import DualNumber
 
@@ -6,10 +6,10 @@ from ir.dualNumbers.dualNumber import DualNumber
 def exp(x):
     if isinstance(x, DualNumber):
         return x.__exp__()
-    return math.exp(x)
+    return np.exp(x)
 
 
 def log(x):
     if isinstance(x, DualNumber):
         return x.__log__()
-    return math.log(x)
+    return np.log(x)
