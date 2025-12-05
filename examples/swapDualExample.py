@@ -5,6 +5,7 @@ from ir.dayCounter.act365Fixed import Act365Fixed
 from ir.dualNumbers.dualNumber import DualNumber
 from ir.legs.fixedLeg import FixedLeg
 from ir.legs.floatingLeg import FloatingLeg
+from ir.products.interestRateSwap import InterestRateSwap
 from ir.products.swap import Swap
 from ir.scheduler.businessDayConvention.noConvention import NoConvention
 from ir.scheduler.calendar.noCalendar import NoCalendar
@@ -20,7 +21,6 @@ if __name__ == '__main__':
         businessDayConvention = NoConvention()
         calendar = NoCalendar()
         stubPeriod = ShortBack()
-
 
         bpScale = 1e-4
         curve = DiscountCurve(
@@ -83,5 +83,18 @@ if __name__ == '__main__':
                 dayCounter=dayCounter
             )
         )
+        notional = 1e9
+        print(swap.npv() * notional)
 
-        print(swap.npv() * 1e9)
+        InterestRateSwap(
+            curve=curve,
+            effectiveDate=effectiveDate,
+            terminationDate=terminationDate,
+            fixFrequency='4M',
+            floatFrequency='1M',
+            endOfMonth=False,
+            businessDayConvention=businessDayConvention,
+            dayCounter=dayCounter,
+            stubPeriod=stubPeriod,
+            calendar=calendar
+        )

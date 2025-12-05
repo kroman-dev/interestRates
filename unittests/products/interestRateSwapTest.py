@@ -5,10 +5,10 @@ from ir.curve.discountCurve import DiscountCurve
 from ir.dayCounter.act365Fixed import Act365Fixed
 from ir.legs.fixedLeg import FixedLeg
 from ir.legs.floatingLeg import FloatingLeg
+from ir.products.interestRateSwap import InterestRateSwap
 from ir.products.swap import Swap
 from ir.scheduler.businessDayConvention.noConvention import NoConvention
 from ir.scheduler.calendar.noCalendar import NoCalendar
-from ir.scheduler.schedule.schedule import Schedule
 from ir.scheduler.stubPeriod.shortBack import ShortBack
 
 
@@ -21,6 +21,9 @@ class SwapTest(TestCase):
         self._businessDayConvention = NoConvention()
         self._calendar = NoCalendar()
         self._stubPeriod = ShortBack()
+        self._fixFrequency = '4M'
+        self._floatFrequency = '1M'
+        self._endOfMonth = False
 
         self._curve = DiscountCurve(
             dates=[date(2022, 1, 1), date(2022, 4, 1), date(2022, 7, 1)],
@@ -28,72 +31,45 @@ class SwapTest(TestCase):
             dayCounter=self._dayCounter
         )
 
-        self._fixedSchedule = Schedule(
-            effectiveDate=self._effectiveDate,
-            terminationDate=self._terminationDate,
-            frequency='4M',
-            businessDayConvention=self._businessDayConvention,
-            endOfMonth=False,
-            stubPeriod=self._stubPeriod,
-            calendar=self._calendar,
-            paymentLag=0
-        )
-
-        self._floatingSchedule = Schedule(
-            effectiveDate=self._effectiveDate,
-            terminationDate=self._terminationDate,
-            frequency='1M',
-            businessDayConvention=self._businessDayConvention,
-            endOfMonth=False,
-            stubPeriod=self._stubPeriod,
-            calendar=self._calendar,
-            paymentLag=0
-        )
-
         # parRate from book
         fixedRatePar = 1.1362747 / 100
-        self._notional = 1e9
+        fixedSomeRate = 1.15 / 100
+        notional = 1e9
 
-        fixedLeg1 = FixedLeg(
+        self._swap1 = InterestRateSwap(
+            curve=self._curve,
             fixedRate=fixedRatePar,
-            curve=self._curve,
-            schedule=self._fixedSchedule,
+            effectiveDate=self._effectiveDate,
+            terminationDate=self._terminationDate,
+            fixFrequency=self._fixFrequency,
+            floatFrequency=self._floatFrequency,
+            endOfMonth=self._endOfMonth,
             businessDayConvention=self._businessDayConvention,
             dayCounter=self._dayCounter,
-            notional=self._notional
+            stubPeriod=self._stubPeriod,
+            calendar=self._calendar,
+            notional=1.
         )
 
-        fixedLeg2 = FixedLeg(
-            fixedRate=1.15 / 100,
+        self._swap2 = InterestRateSwap(
             curve=self._curve,
-            schedule=self._fixedSchedule,
+            fixedRate=fixedSomeRate,
+            effectiveDate=self._effectiveDate,
+            terminationDate=self._terminationDate,
+            fixFrequency=self._fixFrequency,
+            floatFrequency=self._floatFrequency,
+            endOfMonth=self._endOfMonth,
             businessDayConvention=self._businessDayConvention,
             dayCounter=self._dayCounter,
-            notional=self._notional
-        )
-
-        floatingLeg = FloatingLeg(
-            curve=self._curve,
-            schedule=self._floatingSchedule,
-            businessDayConvention=self._businessDayConvention,
-            dayCounter=self._dayCounter,
-            notional=self._notional
-        )
-
-        self._swap1 = Swap(
-            receiveLeg=floatingLeg,
-            payLeg=fixedLeg1
-        )
-
-        self._swap2 = Swap(
-            receiveLeg=floatingLeg,
-            payLeg=fixedLeg2
+            stubPeriod=self._stubPeriod,
+            calendar=self._calendar,
+            notional=notional
         )
 
     def testParRate(self):
         self.assertAlmostEqual(
             0.,
-            self._swap1.npv() / 1e9
+            self._swap1.npv()
         )
 
     def testNpv(self):
