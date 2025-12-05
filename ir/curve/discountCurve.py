@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List
+from typing import List, Union
 
 from ir.curve.genericCurve import GenericCurve
 from ir.curve.interpolator.genericInterpolator import GenericInterpolator
@@ -15,7 +15,7 @@ class DiscountCurve(GenericCurve):
     def __init__(
             self,
             dates: List[date],
-            discountFactors: FloatVectorType,
+            discountFactors: Union[List[DualNumber], FloatVectorType],
             dayCounter: GenericDayCounter,
             interpolator: GenericInterpolator = LogLinearInterpolator
     ):
