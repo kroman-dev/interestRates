@@ -1,5 +1,6 @@
 from datetime import date
-from typing import List, Dict
+from typing import List, Dict, Tuple
+from numpy.typing import NDArray
 
 import numpy as np
 
@@ -20,19 +21,26 @@ class CurveBootstrapping:
             dayCounter: GenericDayCounter,
             curveInterpolator: GenericInterpolator = LogLinearInterpolator
     ):
+        """
+            Note. In [1] discount factor are denoted as v_i, so in dual part
+            I use keys v{index}
+            [1] Darbyshire, Pricing and trading interest rate derivatives
+        """
         self._swaps = swaps
         self._swapsRates = [swap.getFixRate() for swap in swaps]
         self._initialGuessNodes = initialGuessNodes
         self._curveInterpolator = curveInterpolator
+        self._curveDates = list(initialGuessNodes.keys())
+        self._curveDayCounter = dayCounter
 
         self._initialDiscountCurve = DiscountCurve(
-            dates=list(initialGuessNodes.keys()),
+            dates=self._curveDates,
             discountFactors=list(
-                DualNumber(realPart=value, dualPart=f"v{index}")
+                DualNumber(realPart=value, dualPart={f"v{index}": 1})
                 for index, value in enumerate(initialGuessNodes.values())
             ),
-            dayCounter=dayCounter,
-            interpolator=curveInterpolator
+            dayCounter=self._curveDayCounter,
+            interpolator=self._curveInterpolator
         )
         self._swapsParRates = np.array([
             swap.getFixRate() for swap in self._swaps
@@ -40,21 +48,84 @@ class CurveBootstrapping:
 
         self._status = 'unknown'
         self._solverMethodName = "GaussNewton"
-        if len(list(self._initialGuessNodes.keys()))  == len(swaps):
+
+        self._nodePointLength = len(list(self._initialGuessNodes.keys())) - 1
+        if self._nodePointLength == len(swaps):
             self._status = 'completely specified curve'
-        elif len(list(self._initialGuessNodes.keys()))  < len(swaps):
+        elif self._nodePointLength < len(swaps):
             self._status = 'overspecified curve'
-        elif len(list(self._initialGuessNodes.keys()))  < len(swaps):
+        elif self._nodePointLength < len(swaps):
             self._status = 'underspecified curve'
             self._solverMethodName = "LevenbergMarquardt"
         else:
             raise ValueError('Cant specify curve')
 
+    def _buildNewCurve(
+            self,
+            discountFactors: NDArray[DualNumber]
+    ) -> DiscountCurve:
+        return DiscountCurve(
+            dates=self._curveDates,
+            discountFactors=np.concatenate([
+                np.array([DualNumber(realPart=1., dualPart={'v0': 1})]),
+                discountFactors
+            ]),
+            dayCounter=self._curveDayCounter,
+            interpolator=self._curveInterpolator
+        )
+
     def _calculateMetrics(self, curve: DiscountCurve):
-        self._parRatesFromCurve = np.array([
+        parRatesFromCurve = np.array([
             swap.getParRate(curve) for swap in self._swaps
         ]).transpose()
-        self._discountFactors = np.array([
-            self._initialDiscountCurve._values
-        ])[1:].transpose()
-        self._objective
+
+        difference = parRatesFromCurve - self._swapsParRates
+
+        objectiveValue = np.matmul(difference.transpose(), difference)
+        gradientObjective = np.array(
+            list(objectiveValue.dualPart.values())[1:]
+        ).transpose()
+        jacobian = np.array([
+            [
+                parRate.dualPart.get(f'v{index + 1}', 0)
+                for parRate in parRatesFromCurve
+            ]
+            for index in range(self._nodePointLength)
+        ])
+        return objectiveValue, gradientObjective, jacobian
+
+    def _updateStepGaussNewton(
+            self,
+            curve: DiscountCurve
+    ) -> Tuple[DualNumber, NDArray[DualNumber]]:
+        currentDiscountFactors = np.array(curve._values[1:]).transpose()
+        objectiveValue, gradientObjective, jacobian = \
+            self._calculateMetrics(curve)
+        # Ax = b
+        return objectiveValue, currentDiscountFactors + np.linalg.solve(
+            np.matmul(jacobian, jacobian.transpose()),
+            - 0.5 * gradientObjective
+        )
+
+    def solve(self) -> Tuple[DiscountCurve, bool]:
+        maxIterations = 100
+        tolerance = 1e-10
+        previousObjectiveValue = 1e10
+        solutionCurve = self._initialDiscountCurve
+        isSuccessConvergence = False
+        for iterationIndex in range(maxIterations):
+            objectiveValue, newDiscountFactors = \
+                self._updateStepGaussNewton(solutionCurve)
+            if (
+                    (objectiveValue.realPart < previousObjectiveValue)
+                    and (
+                        previousObjectiveValue - objectiveValue.realPart
+                    ) < tolerance
+            ):
+                isSuccessConvergence = True
+                break
+            # TODO add LevenbergMarquardt
+            solutionCurve = self._buildNewCurve(newDiscountFactors)
+            previousObjectiveValue = objectiveValue.realPart
+
+        return solutionCurve, isSuccessConvergence
