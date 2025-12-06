@@ -33,8 +33,8 @@ class CurveBootstrappingTest(TestCase):
         values = [1. for _ in range(len(dates))]
 
         self._initialNodes = {
-            date: discountFactor
-            for date, discountFactor in zip(dates, values)
+            _date: discountFactor
+            for _date, discountFactor in zip(dates, values)
         }
 
         self._initialCurve = DiscountCurve(

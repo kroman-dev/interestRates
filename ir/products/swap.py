@@ -22,7 +22,8 @@ class Swap:
         """
         # TODO add simple test to fix assert bug with payLeg.discount
         return self._receiveLeg.npv(curve) / np.sum(
-            self._payLeg._getDiscountFactors(curve) * self._payLeg._accrualYearFractions
+            self._payLeg._getDiscountFactors(curve)
+            * self._payLeg._accrualYearFractions
         ) / self._payLeg._notional
 
     def getFixRate(self) -> float:

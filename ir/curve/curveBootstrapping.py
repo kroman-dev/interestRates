@@ -46,16 +46,16 @@ class CurveBootstrapping:
             swap.getFixRate() for swap in self._swaps
         ]).transpose()
 
-        self._status = 'unknown'
+        self._bootstrappingStatus = 'unknown'
         self._solverMethodName = "GaussNewton"
 
         self._nodePointLength = len(list(self._initialGuessNodes.keys())) - 1
         if self._nodePointLength == len(swaps):
-            self._status = 'completely specified curve'
+            self._bootstrappingStatus = 'completely specified curve'
         elif self._nodePointLength < len(swaps):
-            self._status = 'overspecified curve'
+            self._bootstrappingStatus = 'overspecified curve'
         elif self._nodePointLength < len(swaps):
-            self._status = 'underspecified curve'
+            self._bootstrappingStatus = 'underspecified curve'
             self._solverMethodName = "LevenbergMarquardt"
         else:
             raise ValueError('Cant specify curve')
@@ -107,6 +107,17 @@ class CurveBootstrapping:
             - 0.5 * gradientObjective
         )
 
+    def _updateStep(
+            self,
+            curve: DiscountCurve
+    ) -> Tuple[DualNumber, NDArray[DualNumber]]:
+        if self._solverMethodName == "GaussNewton":
+            return self._updateStepGaussNewton(curve)
+        elif self._solverMethodName == "LevenbergMarquardt":
+            return self._updateStepLevenbergMarquardt(curve)
+        else:
+            raise ValueError("unknown solver method")
+
     def solve(self) -> Tuple[DiscountCurve, bool]:
         maxIterations = 100
         tolerance = 1e-10
@@ -115,7 +126,7 @@ class CurveBootstrapping:
         isSuccessConvergence = False
         for iterationIndex in range(maxIterations):
             objectiveValue, newDiscountFactors = \
-                self._updateStepGaussNewton(solutionCurve)
+                self._updateStep(solutionCurve)
             if (
                     (objectiveValue.realPart < previousObjectiveValue)
                     and (
