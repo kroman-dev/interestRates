@@ -47,6 +47,7 @@ class CurveBootstrapping:
         ]).transpose()
 
         self._bootstrappingStatus = 'unknown'
+        self._regularizationParameter = 1000
         self._solverMethodName = "GaussNewton"
 
         self._nodePointLength = len(list(self._initialGuessNodes.keys())) - 1
@@ -94,49 +95,78 @@ class CurveBootstrapping:
         ])
         return objectiveValue, gradientObjective, jacobian
 
+    @staticmethod
     def _updateStepGaussNewton(
-            self,
-            curve: DiscountCurve
-    ) -> Tuple[DualNumber, NDArray[DualNumber]]:
-        currentDiscountFactors = np.array(curve._values[1:]).transpose()
-        objectiveValue, gradientObjective, jacobian = \
-            self._calculateMetrics(curve)
+            currentDiscountFactors: NDArray[DualNumber],
+            gradientObjective: NDArray[DualNumber],
+            jacobian: NDArray[DualNumber]
+    ) -> NDArray[DualNumber]:
+        # noinspection PyTypeChecker
         # Ax = b
-        return objectiveValue, currentDiscountFactors + np.linalg.solve(
+        return currentDiscountFactors + np.linalg.solve(
             np.matmul(jacobian, jacobian.transpose()),
+            - 0.5 * gradientObjective
+        )
+
+    def _updateStepLevenbergMarquardt(
+            self,
+            currentDiscountFactors: NDArray[DualNumber],
+            gradientObjective: NDArray[DualNumber],
+            jacobian: NDArray[DualNumber]
+    ) -> NDArray[DualNumber]:
+        # noinspection PyTypeChecker
+        return currentDiscountFactors + np.linalg.solve(
+            np.matmul(jacobian, jacobian.transpose())
+            + self._regularizationParameter * np.eye(jacobian.shape[0]),
             - 0.5 * gradientObjective
         )
 
     def _updateStep(
             self,
-            curve: DiscountCurve
+            curve: DiscountCurve,
+            previousObjectiveValue: float
     ) -> Tuple[DualNumber, NDArray[DualNumber]]:
+        currentDiscountFactors = np.array(curve._values[1:]).transpose()
+        objectiveValue, gradientObjective, jacobian = \
+            self._calculateMetrics(curve)
+
         if self._solverMethodName == "GaussNewton":
-            return self._updateStepGaussNewton(curve)
+            return objectiveValue, self._updateStepGaussNewton(
+                currentDiscountFactors=currentDiscountFactors,
+                gradientObjective=gradientObjective,
+                jacobian=jacobian
+            )
         elif self._solverMethodName == "LevenbergMarquardt":
-            return self._updateStepLevenbergMarquardt(curve)
+            self._regularizationParameter *= \
+                2 if previousObjectiveValue < objectiveValue.realPart else 0.5
+            return objectiveValue, self._updateStepLevenbergMarquardt(
+                currentDiscountFactors=currentDiscountFactors,
+                gradientObjective=gradientObjective,
+                jacobian=jacobian
+            )
         else:
             raise ValueError("unknown solver method")
 
     def solve(self) -> Tuple[DiscountCurve, bool]:
-        maxIterations = 100
-        tolerance = 1e-10
+        maxIterations = 200
+        tolerance = 1e-11
         previousObjectiveValue = 1e10
         solutionCurve = self._initialDiscountCurve
         isSuccessConvergence = False
         for iterationIndex in range(maxIterations):
             objectiveValue, newDiscountFactors = \
-                self._updateStep(solutionCurve)
-            if (
-                    (objectiveValue.realPart < previousObjectiveValue)
-                    and (
-                        previousObjectiveValue - objectiveValue.realPart
-                    ) < tolerance
-            ):
+                self._updateStep(
+                    curve=solutionCurve,
+                    previousObjectiveValue=previousObjectiveValue
+                )
+            if (objectiveValue.realPart < previousObjectiveValue) \
+                and (
+                    previousObjectiveValue - objectiveValue.realPart
+            ) < tolerance:
                 isSuccessConvergence = True
                 break
-            # TODO add LevenbergMarquardt
             solutionCurve = self._buildNewCurve(newDiscountFactors)
             previousObjectiveValue = objectiveValue.realPart
 
+        self._regularizationParameter = 1000
         return solutionCurve, isSuccessConvergence
