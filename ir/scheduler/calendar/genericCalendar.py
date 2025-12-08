@@ -60,7 +60,6 @@ class GenericCalendar(ABC):
             newDate += Period('1D')
         return newDate - Period('1D')
 
-    @abstractmethod
     def advance(
             self,
             date: datetime.date,
@@ -78,10 +77,38 @@ class GenericCalendar(ABC):
             a particular calendar month, the end date is on the final
             business day of the end month (not necessarily the corresponding
             date in the end month).
+        # TODO think about eom and following case:
+            # https://quant.stackexchange.com/questions/73827/is-end-of-month-eom-rule-overrides-convention-rule-in-quantlib-schedule
+            # https://quant.stackexchange.com/questions/78641/is-end-of-month-eom-rule-overrides-unadjusted-convention-rule-in-quantlib
         Ref:
          [1] OpenGamma, Interest Rate Instruments and Market Conventions Guide
         """
-        pass
+        if endOfMonth and self.isLastMonthBusinessDay(date):
+            return self.getLastMonthBusinessDay(date + period)
+
+        result = businessDayConvention.adjust(
+            date=date + period,
+            calendar=self
+        )
+
+        return result
+
+    def retreat(
+            self,
+            date: datetime.date,
+            period: Period,
+            businessDayConvention: GenericBusinessDayConvention,
+            endOfMonth: bool
+    ):
+        if endOfMonth and self.isLastMonthBusinessDay(date):
+            return self.getLastMonthBusinessDay(date - period)
+
+        result = businessDayConvention.adjust(
+            date=date - period,
+            calendar=self
+        )
+
+        return result
 
     def __str__(self):
         return f'{self._name}Calendar'

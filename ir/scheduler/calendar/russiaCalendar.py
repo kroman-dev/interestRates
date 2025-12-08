@@ -4,10 +4,7 @@ try:
 except:
     raise ImportError('Cant import holidays_ru -> install')
 
-from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
-    GenericBusinessDayConvention
 from ir.scheduler.calendar.genericCalendar import GenericCalendar
-from ir.scheduler.period.period import Period
 
 
 class RussiaCalendar(GenericCalendar):
@@ -22,42 +19,3 @@ class RussiaCalendar(GenericCalendar):
         if date in self._holidays:
             return False
         return not holidays_ru.check_holiday(date)
-
-    def advance(
-            self,
-            date: datetime.date,
-            period: Period,
-            businessDayConvention: GenericBusinessDayConvention,
-            endOfMonth: bool
-    ):
-        """
-            # TODO think about eom and following case:
-            # https://quant.stackexchange.com/questions/73827/is-end-of-month-eom-rule-overrides-convention-rule-in-quantlib-schedule
-            # https://quant.stackexchange.com/questions/78641/is-end-of-month-eom-rule-overrides-unadjusted-convention-rule-in-quantlib
-        """
-        if endOfMonth and self.isLastMonthBusinessDay(date):
-            return self.getLastMonthBusinessDay(date + period)
-
-        result = businessDayConvention.adjust(
-            date=date + period,
-            calendar=self
-        )
-
-        return result
-
-    def retreat(
-            self,
-            date: datetime.date,
-            period: Period,
-            businessDayConvention: GenericBusinessDayConvention,
-            endOfMonth: bool
-    ):
-        if endOfMonth and self.isLastMonthBusinessDay(date):
-            return self.getLastMonthBusinessDay(date - period)
-
-        result = businessDayConvention.adjust(
-            date=date - period,
-            calendar=self
-        )
-
-        return result
