@@ -55,7 +55,7 @@ class CurveBootstrapping:
             self._bootstrappingStatus = 'completely specified curve'
         elif self._nodePointLength < len(swaps):
             self._bootstrappingStatus = 'overspecified curve'
-        elif self._nodePointLength < len(swaps):
+        elif self._nodePointLength > len(swaps):
             self._bootstrappingStatus = 'underspecified curve'
             self._solverMethodName = "LevenbergMarquardt"
         else:
@@ -148,8 +148,8 @@ class CurveBootstrapping:
             raise ValueError("unknown solver method")
 
     def solve(self) -> Tuple[DiscountCurve, bool]:
-        maxIterations = 200
-        tolerance = 1e-11
+        maxIterations = 2000
+        tolerance = 1e-14
         previousObjectiveValue = 1e10
         solutionCurve = self._initialDiscountCurve
         isSuccessConvergence = False

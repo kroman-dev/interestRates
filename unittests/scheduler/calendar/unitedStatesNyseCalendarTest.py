@@ -38,6 +38,14 @@ class UnitedStatesNyseCalendarTest(TestCase):
                 )
             )
 
+        with self.subTest("date(2045, 11, 27)"):
+            self.assertEqual(
+                True,
+                self._sampleUsCalendar.isBusinessDay(
+                    datetime.date(2045, 11, 27)
+                )
+            )
+
     def testAdvance(self):
         with self.subTest("0D"):
             self.assertEqual(
