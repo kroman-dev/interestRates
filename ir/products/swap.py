@@ -12,6 +12,12 @@ class Swap:
         self._receiveLeg = receiveLeg
         self._payLeg = payLeg
 
+    def __str__(self):
+        frequency = self._receiveLeg._schedule._frequency
+        terminationDate = self._receiveLeg._schedule._terminationDate
+        effectiveDate = self._receiveLeg._schedule._effectiveDate
+        return f"{effectiveDate}_{frequency}_{terminationDate}"
+
     def npv(self, curve: Optional[DiscountCurve] = None) -> float:
         return self._receiveLeg.npv(curve) - self._payLeg.npv(curve)
 

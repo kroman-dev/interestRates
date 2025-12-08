@@ -1,8 +1,12 @@
 from unittest import TestCase
 from datetime import date
 
+from ir.dayCounter.act360 import Act360
 from ir.scheduler.businessDayConvention.following import Following
 from ir.scheduler.calendar.russiaCalendar import RussiaCalendar
+from ir.scheduler.calendar.unitedStatesNyseCalendar import \
+    UnitedStatesNyseCalendar
+from ir.scheduler.period.period import Period
 from ir.scheduler.schedule.schedule import Schedule
 from ir.scheduler.stubPeriod.shortBack import ShortBack
 from ir.scheduler.stubPeriod.shortFront import ShortFront
@@ -189,3 +193,33 @@ class ScheduleTest(TestCase):
                 date(2025, 12, 5),
                 schedule.paymentDates[0]
             )
+
+    def testGetScheduleIrs(self):
+        calendar = UnitedStatesNyseCalendar()
+        businessDayConvention = Following()
+        valueDate = date(2022, 1, 31)
+        endOfMonth = False
+        stubPeriod = ShortBack()
+
+        effectiveDate = calendar.advance(
+            date=valueDate,
+            period=Period('2D'),
+            businessDayConvention=businessDayConvention,
+            endOfMonth=endOfMonth
+        )
+
+        _sampleSchedule = Schedule(
+            effectiveDate=effectiveDate,
+            terminationDate=date(2025, 2, 3),
+            frequency='3M',
+            businessDayConvention=businessDayConvention,
+            endOfMonth=endOfMonth,
+            stubPeriod=stubPeriod,
+            calendar=calendar,
+            paymentLag=0
+        )
+
+        self.assertNotEqual(
+            _sampleSchedule.getSchedule().accrualStartDates[-1],
+            _sampleSchedule.getSchedule().accrualEndDates[-1]
+        )

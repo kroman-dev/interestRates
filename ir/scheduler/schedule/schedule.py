@@ -1,5 +1,7 @@
 from datetime import date
 
+import numpy as np
+
 from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
     GenericBusinessDayConvention
 from ir.scheduler.calendar.genericCalendar import GenericCalendar
@@ -71,6 +73,7 @@ class Schedule(GenericSchedule):
                 endOfMonth=endOfMonth
             )[::-1]
 
+        schedule = np.unique(schedule).tolist()
         accrualStartDates = schedule[:-1]
         accrualEndDates = schedule[1:]
 
