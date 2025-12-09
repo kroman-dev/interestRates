@@ -32,9 +32,8 @@ if __name__ == '__main__':
              + [f'{i}Y' for i in range(1, 11, 1)] \
              + ['12Y', '15Y', '20Y', '25Y', '30Y']
 
-    # dates = [date(2022, 1, 31), effectiveDate]
-    dates = [date(2022, 1, 31), date(2022, 1, 31)]
-    # dates = [effectiveDate, effectiveDate]
+    dates = [date(2022, 1, 31)]
+
     dates += [
         calendar.advance(
             date=effectiveDate,
@@ -61,8 +60,8 @@ if __name__ == '__main__':
     deposit = InterestRateSwap(
         curve=initialCurve,
         fixedRate=0.3 / 100,
-        effectiveDate=dates[1],
-        terminationDate=dates[2],
+        effectiveDate=effectiveDate,
+        terminationDate=dates[1],
         fixFrequency='3M',
         floatFrequency='3M',
         endOfMonth=endOfMonth,
@@ -76,8 +75,8 @@ if __name__ == '__main__':
     fra1 = InterestRateSwap(
         curve=initialCurve,
         fixedRate=0.75 / 100,
-        effectiveDate=dates[2],
-        terminationDate=dates[3],
+        effectiveDate=dates[1],
+        terminationDate=dates[2],
         fixFrequency='3M',
         floatFrequency='3M',
         endOfMonth=endOfMonth,
@@ -91,8 +90,8 @@ if __name__ == '__main__':
     fra2 = InterestRateSwap(
         curve=initialCurve,
         fixedRate=1.1 / 100,
-        effectiveDate=dates[3],
-        terminationDate=dates[4],
+        effectiveDate=dates[2],
+        terminationDate=dates[3],
         fixFrequency='3M',
         floatFrequency='3M',
         endOfMonth=endOfMonth,
@@ -127,10 +126,8 @@ if __name__ == '__main__':
 
     swaps = [deposit, fra1, fra2] + [
         createSwap(fixRate, endDate)
-        for fixRate, endDate in zip(swapQuotes, dates[5:])
+        for fixRate, endDate in zip(swapQuotes, dates[4:])
     ]
-
-    str(swaps[-1])
 
     curve, convergenceStatus = CurveBootstrapping(
         initialGuessNodes=initialNodes,
@@ -142,7 +139,6 @@ if __name__ == '__main__':
     for swap in swaps:
         print(swap.npv(curve).realPart)
 
-    df = curve.getDiscountFactor(date(2022, 4, 30)).realPart
-    print(df)
-    # print(1 / 0.25 * (1 / df - 1))
-    # print(1 / 0.25 * (1 / (df + 1e-6) - 1))
+    print()
+    for _date in dates:
+        print(f"{_date}: {round(curve.getDiscountFactor(_date).realPart, 6)}")
