@@ -68,7 +68,6 @@ class GenericCalendar(ABC):
             endOfMonth: bool
     ):
         """
-
         :param date:
         :param period:
         :param businessDayConvention:
