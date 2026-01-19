@@ -44,7 +44,7 @@ if __name__ == '__main__':
         for tenor in tenors
     ]
 
-    values = [1. for _ in range(len(dates))]
+    values = [1. for _ in dates]
 
     initialNodes = {
         _date: discountFactor

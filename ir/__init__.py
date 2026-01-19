@@ -9,6 +9,7 @@ from ir.scheduler.calendar.targetCalendar import TargetCalendar
 from ir.scheduler.period.period import Period
 from ir.scheduler.stubPeriod.shortBack import ShortBack
 from ir.dayCounter.act360 import Act360
+from ir.dayCounter.act365Fixed import Act365Fixed
 
 
 __all__ = [
@@ -20,6 +21,7 @@ __all__ = [
     "ShortBack",
     "DiscountCurve",
     "Act360",
+    "Act365Fixed",
     "LogLinearInterpolator",
     "TargetCalendar"
 ]
