@@ -149,7 +149,7 @@ class CurveBootstrapping:
 
     def solve(self) -> Tuple[DiscountCurve, bool]:
         maxIterations = 2000
-        tolerance = 1e-14
+        tolerance = 1e-16
         previousObjectiveValue = 1e10
         solutionCurve = self._initialDiscountCurve
         isSuccessConvergence = False

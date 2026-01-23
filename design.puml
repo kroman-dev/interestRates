@@ -1,0 +1,397 @@
+@startuml
+!theme plain
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+package "ir" {
+    package "curve" {
+        class CurveBootstrapping {
+            - _swaps: List[InterestRateSwap]
+            - _swapsRates: List[float]
+            - _initialGuessNodes: Dict[date, float]
+            - _curveInterpolator: GenericInterpolator
+            - _curveDates: List[date]
+            - _curveDayCounter: GenericDayCounter
+            - _initialDiscountCurve: DiscountCurve
+            - _swapsParRates: NDArray
+            - _bootstrappingStatus: str
+            - _regularizationParameter: float
+            - _solverMethodName: str
+            - _nodePointLength: int
+            + __init__(initialGuessNodes, swaps, dayCounter, curveInterpolator)
+            - _buildNewCurve(discountFactors): DiscountCurve
+            - _calculateMetrics(curve): Tuple
+            {static} - _updateStepGaussNewton(currentDiscountFactors, gradientObjective, jacobian): NDArray[DualNumber]
+            - _updateStepLevenbergMarquardt(currentDiscountFactors, gradientObjective, jacobian): NDArray[DualNumber]
+            - _updateStep(curve, previousObjectiveValue): Tuple[DualNumber, NDArray[DualNumber]]
+            + solve(): Tuple[DiscountCurve, bool]
+        }
+        
+        class DiscountCurve {
+            - _curveDate: date
+            - _dates: List[date]
+            - _values: FloatVectorType
+            - _dayCounter: GenericDayCounter
+            - _interpolator: GenericInterpolator
+            + __init__(dates, discountFactors, dayCounter, interpolator)
+            - _interpolate(x: date): FloatOrVectorType
+            + getDiscountFactor(x: date): FloatOrVectorType
+            + getForwardRate(periodStart: date, periodEnd: date): float
+            + setInterpolator(newInterpolator: GenericInterpolator)
+            + __call__(x: date): FloatOrVectorType
+            + __str__(): str
+        }
+        
+        class GenericCurve {
+            {abstract}
+            - _dates: List[date]
+            - _values: FloatVectorType
+            - _dayCounter: GenericDayCounter
+            - _interpolator: GenericInterpolator
+            + __init__(dates, values, dayCounter, interpolator)
+            {abstract} - _interpolate(x: date): FloatOrVectorType
+            {abstract} + getDiscountFactor(x: date): FloatOrVectorType
+            + getForwardRate(periodStart: date, periodEnd: date): float
+            + setInterpolator(newInterpolator: GenericInterpolator)
+            + __call__(x: date): FloatOrVectorType
+            + __str__(): str
+        }
+        
+        package "interpolator" {
+            class GenericInterpolator {
+                {abstract}
+                {abstract} - _interpolate(x: FloatOrVectorType): FloatOrVectorType
+                + __call__(x: FloatOrVectorType): FloatOrVectorType
+            }
+            
+            class LinearInterpolator {
+                - _x1: float
+                - _x2: float
+                - _y1: float
+                - _y2: float
+                + __init__(x1, x2, y1, y2)
+                - _interpolate(x: FloatOrVectorType): FloatOrVectorType
+            }
+            
+            class LogLinearInterpolator {
+                - _x1: float
+                - _x2: float
+                - _y1: float
+                - _y2: float
+                - _linearInterpolator: LinearInterpolator
+                + __init__(x1, x2, y1, y2)
+                - _interpolate(x: FloatOrVectorType): FloatOrVectorType
+            }
+            
+            GenericInterpolator <|-- LinearInterpolator
+            GenericInterpolator <|-- LogLinearInterpolator
+        }
+        
+        GenericCurve <|-- DiscountCurve
+        GenericCurve --> GenericInterpolator
+    }
+    
+    package "dayCounter" {
+        class GenericDayCounter {
+            {abstract}
+            {abstract} {classmethod} + yearFraction(startDate: date, endDate: date): float
+        }
+        
+        class Act360 {
+            {classmethod} + yearFraction(startDate: date, endDate: date): float
+        }
+        
+        class Act365Fixed {
+            {classmethod} + yearFraction(startDate: date, endDate: date): float
+        }
+        
+        class Thirty360BondBasis {
+            {classmethod} + yearFraction(startDate: date, endDate: date): float
+        }
+        
+        class GenericThirty360 {
+            {classmethod} + yearFraction(startDate: date, endDate: date): float
+        }
+        
+        GenericDayCounter <|-- Act360
+        GenericDayCounter <|-- Act365Fixed
+        GenericDayCounter <|-- GenericThirty360
+        GenericThirty360 <|-- Thirty360BondBasis
+    }
+    
+    package "dualNumbers" {
+        class DualNumber {
+            - _realPart: float
+            - _dualPart: Optional[Dict[str, float]]
+            + __init__(realPart, dualPart)
+            + realPart: float {property}
+            + dualPart: Optional[Dict[str, float]] {property}
+            + __str__(): str
+            + __repr__(): str
+            + __neg__(): DualNumber
+            + __eq__(other): bool
+            + __add__(other): DualNumber
+            + __radd__(other): DualNumber
+            + __sub__(other): DualNumber
+            + __rsub__(other): DualNumber
+            + __mul__(other): DualNumber
+            + __rmul__(other): DualNumber
+            + conjugate(): DualNumber
+            + __truediv__(other): DualNumber
+            + __rtruediv__(other): DualNumber
+            + __exp__(): DualNumber
+            + __log__(): DualNumber
+            + __pow__(power): DualNumber
+        }
+        
+        class DualFunctions {
+            {static} + exp(x): DualNumber | float
+            {static} + log(x): DualNumber | float
+        }
+    }
+    
+    package "legs" {
+        class GenericLeg {
+            {abstract}
+            - _curve: DiscountCurve
+            - _schedule: GenericSchedule
+            - _scheduleData: ScheduleData
+            - _businessDayConvention: GenericBusinessDayConvention
+            - _dayCounter: GenericDayCounter
+            - _notional: float
+            - _accrualYearFractions: FloatVectorType
+            - _discountFactors: FloatVectorType
+            + __init__(curve, schedule, businessDayConvention, dayCounter, notional)
+            - _getForwardRates(curve: Optional[DiscountCurve]): FloatVectorType
+            - _getDiscountFactors(curve: Optional[DiscountCurve]): FloatVectorType
+            {abstract} + getCashFlows(curve: Optional[DiscountCurve]): FloatVectorType
+            + npv(curve: Optional[DiscountCurve]): float
+        }
+        
+        class FixedLeg {
+            - _fixedRate: float
+            + __init__(fixedRate, curve, schedule, businessDayConvention, dayCounter, notional)
+            + getFixRate(): float
+            + getCashFlows(curve: Optional[DiscountCurve]): FloatVectorType
+        }
+        
+        class FloatingLeg {
+            - _forwardRates: FloatVectorType
+            + __init__(curve, schedule, businessDayConvention, dayCounter, notional)
+            + getCashFlows(curve: Optional[DiscountCurve]): FloatVectorType
+        }
+        
+        GenericLeg <|-- FixedLeg
+        GenericLeg <|-- FloatingLeg
+    }
+    
+    package "products" {
+        class Swap {
+            - _receiveLeg: GenericLeg
+            - _payLeg: GenericLeg
+            + __init__(receiveLeg, payLeg)
+            + __str__(): str
+            + npv(curve: Optional[DiscountCurve]): float
+            + getParRate(curve: Optional[DiscountCurve]): float
+            + getFixRate(): float
+        }
+        
+        class InterestRateSwap {
+            + __init__(curve, fixedRate, effectiveDate, terminationDate, fixFrequency, floatFrequency, endOfMonth, businessDayConvention, dayCounter, stubPeriod, calendar, notional, paymentLag, floatLegDayCounter)
+        }
+        
+        class Deposit {
+            - _fixLeg: FixedLeg
+            + __init__(curve, fixedRate, effectiveDate, tenor, businessDayConvention, endOfMonth, dayCounter, stubPeriod, calendar, notional)
+            + npv(curve: Optional[DiscountCurve]): float
+            + getFixRate(): float
+            + getParRate(curve: Optional[DiscountCurve]): float
+        }
+        
+        Swap <|-- InterestRateSwap
+    }
+    
+    package "projectTyping" {
+        class FloatOrVectorType {
+            <<type alias>>
+        }
+        
+        class FloatVectorType {
+            <<type alias>>
+        }
+    }
+    
+    package "scheduler" {
+        package "businessDayConvention" {
+            class GenericBusinessDayConvention {
+                {abstract}
+                {abstract} {static} + adjust(date: datetime.date, calendar: GenericCalendar): datetime.date
+            }
+            
+            class Following {
+                {static} + adjust(date: datetime.date, calendar: GenericCalendar): datetime.date
+            }
+            
+            class ModifiedFollowing {
+                {static} + adjust(date: datetime.date, calendar: GenericCalendar): datetime.date
+            }
+            
+            class Preceding {
+                {static} + adjust(date: datetime.date, calendar: GenericCalendar): datetime.date
+            }
+            
+            class NoConvention {
+                {static} + adjust(date: datetime.date, calendar: GenericCalendar): datetime.date
+            }
+            
+            GenericBusinessDayConvention <|-- Following
+            GenericBusinessDayConvention <|-- ModifiedFollowing
+            GenericBusinessDayConvention <|-- Preceding
+            GenericBusinessDayConvention <|-- NoConvention
+        }
+        
+        package "calendar" {
+            class GenericCalendar {
+                {abstract}
+                - _name: str
+                - _holidays: List[datetime.date]
+                + __init__(name: str)
+                + getLastMonthBusinessDay(date: datetime.date): datetime.date
+                + isLastMonthBusinessDay(date: datetime.date): bool
+                + addHoliday(date: datetime.date): None
+                {abstract} + isBusinessDay(date: datetime.date): bool
+                {static} + isEndOfMonth(date: datetime.date): bool
+                {static} + getEndOfMonth(date: datetime.date): datetime.date
+                + advance(date, period, businessDayConvention, endOfMonth): datetime.date
+                + retreat(date, period, businessDayConvention, endOfMonth): datetime.date
+                + __str__(): str
+                + __repr__(): str
+            }
+            
+            class TargetCalendar {
+                + isBusinessDay(date: datetime.date): bool
+            }
+            
+            class RussiaCalendar {
+                + isBusinessDay(date: datetime.date): bool
+            }
+            
+            class UnitedStatesNyseCalendar {
+                + isBusinessDay(date: datetime.date): bool
+            }
+            
+            class NoCalendar {
+                + isBusinessDay(date: datetime.date): bool
+            }
+            
+            GenericCalendar <|-- TargetCalendar
+            GenericCalendar <|-- RussiaCalendar
+            GenericCalendar <|-- UnitedStatesNyseCalendar
+            GenericCalendar <|-- NoCalendar
+        }
+        
+        package "period" {
+            class Period {
+                - _availableTenors: List[str]
+                - _period: str
+                - _timeDelta: relativedelta
+                + __init__(period: str)
+                {classmethod} - _getTimeDelta(period: str): relativedelta
+                + advance(date: datetime.date): datetime.date
+                + retreat(date: datetime.date): datetime.date
+                + __radd__(term): Union[datetime.date, Period]
+                + __add__(term): Union[datetime.date, Period]
+                + __rsub__(term: datetime.date): datetime.date
+            }
+        }
+        
+        package "schedule" {
+            class GenericSchedule {
+                {abstract}
+                - _effectiveDate: date
+                - _terminationDate: date
+                - _frequency: str
+                - _businessDayConvention: GenericBusinessDayConvention
+                - _endOfMonth: bool
+                - _stubPeriod: GenericStubPeriod
+                - _calendar: GenericCalendar
+                - _schedule: ScheduleData
+                + __init__(effectiveDate, terminationDate, frequency, businessDayConvention, endOfMonth, stubPeriod, calendar, paymentLag)
+                + getSchedule(): ScheduleData
+                {static} - _adjustSchedule(unadjustedSchedule, calendar, businessDayConvention, endOfMonth): List[date]
+                {abstract} {static} + createSchedule(effectiveDate, terminationDate, frequency, businessDayConvention, endOfMonth, stubPeriod, calendar, paymentLag): ScheduleData
+                + __repr__(): str
+            }
+            
+            class Schedule {
+                + __init__(effectiveDate, terminationDate, frequency, businessDayConvention, endOfMonth, stubPeriod, calendar, paymentLag)
+                {classmethod} + createSchedule(effectiveDate, terminationDate, frequency, businessDayConvention, endOfMonth, stubPeriod, calendar, paymentLag): ScheduleData
+            }
+            
+            class ScheduleData {
+                + accrualStartDates: List[date]
+                + accrualEndDates: List[date]
+                + paymentDates: List[date]
+                + __repr__(): str
+            }
+            
+            GenericSchedule <|-- Schedule
+        }
+        
+        package "stubPeriod" {
+            class GenericStubPeriod {
+                {abstract}
+                - _stubPeriodGenerationType: StubPeriodGenerationTypeEnum
+                {abstract} {static} + makeUnadjustedSchedule(startDate: date, endDate: date, frequency: str): List[date]
+                {classmethod} + getStubPeriodGenerationType(): StubPeriodGenerationTypeEnum
+            }
+            
+            class ShortBack {
+                - _stubPeriodGenerationType: StubPeriodGenerationTypeEnum
+                {classmethod} + makeUnadjustedSchedule(startDate: date, endDate: date, frequency: str): List[date]
+            }
+            
+            class ShortFront {
+                {classmethod} + makeUnadjustedSchedule(startDate: date, endDate: date, frequency: str): List[date]
+            }
+            
+            class StubPeriodGenerationTypeEnum {
+                <<enumeration>>
+            }
+            
+            GenericStubPeriod <|-- ShortBack
+            GenericStubPeriod <|-- ShortFront
+        }
+    }
+}
+
+' Relationships between packages
+GenericCurve --> GenericDayCounter
+GenericCurve --> GenericInterpolator
+GenericLeg --> DiscountCurve
+GenericLeg --> GenericDayCounter
+GenericLeg --> GenericSchedule
+GenericLeg --> GenericBusinessDayConvention
+GenericSchedule --> GenericBusinessDayConvention
+GenericSchedule --> GenericCalendar
+GenericSchedule --> GenericStubPeriod
+GenericSchedule --> Period
+Swap --> GenericLeg
+InterestRateSwap --> FixedLeg
+InterestRateSwap --> FloatingLeg
+InterestRateSwap --> DiscountCurve
+InterestRateSwap --> GenericDayCounter
+InterestRateSwap --> GenericCalendar
+InterestRateSwap --> GenericBusinessDayConvention
+InterestRateSwap --> Schedule
+InterestRateSwap --> GenericStubPeriod
+Deposit --> DiscountCurve
+Deposit --> FixedLeg
+CurveBootstrapping --> DiscountCurve
+CurveBootstrapping --> InterestRateSwap
+LogLinearInterpolator --> LinearInterpolator
+LogLinearInterpolator --> DualFunctions
+GenericCalendar --> GenericBusinessDayConvention
+GenericCalendar --> Period
+
+@enduml

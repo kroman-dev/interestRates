@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Optional
 
 from ir.legs.fixedLeg import FixedLeg
 from ir.legs.floatingLeg import FloatingLeg
@@ -14,7 +15,7 @@ from ir.scheduler.stubPeriod.genericStubPeriod import GenericStubPeriod
 
 class InterestRateSwap(Swap):
     """
-        IMM vanilla IRS
+        vanilla IRS
     """
     def __init__(
             self,
@@ -30,7 +31,8 @@ class InterestRateSwap(Swap):
             stubPeriod: GenericStubPeriod,
             calendar: GenericCalendar,
             notional: float = 1,
-            paymentLag: int = 0
+            paymentLag: int = 0,
+            floatLegDayCounter: Optional[GenericDayCounter] = None
     ):
         # TODO add roll day
         # TODO add leg2 params
@@ -48,7 +50,8 @@ class InterestRateSwap(Swap):
                     paymentLag=paymentLag
                 ),
                 businessDayConvention=businessDayConvention,
-                dayCounter=dayCounter,
+                dayCounter=dayCounter if floatLegDayCounter is None
+                    else floatLegDayCounter,
                 notional=notional
             ),
             payLeg=FixedLeg(
