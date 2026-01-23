@@ -1,6 +1,7 @@
 from datetime import date
 from typing import Optional
 
+from ir.products.bootstrapInstrument import BootstrapInstrument
 from ir.scheduler.period.period import Period
 from ir.curve.discountCurve import DiscountCurve
 from ir.dayCounter.genericDayCounter import GenericDayCounter
@@ -12,12 +13,10 @@ from ir.scheduler.schedule.schedule import Schedule
 from ir.scheduler.stubPeriod.genericStubPeriod import GenericStubPeriod
 
 
-# TODO add abstract class
-class Deposit:
+class Deposit(BootstrapInstrument):
 
     def __init__(
             self,
-            curve: DiscountCurve,
             fixedRate: float,
             effectiveDate: date,
             tenor: str,
@@ -26,11 +25,11 @@ class Deposit:
             dayCounter: GenericDayCounter,
             stubPeriod: GenericStubPeriod,
             calendar: GenericCalendar,
-            notional: float = 1.
+            notional: float = 1.,
+            curve: Optional[DiscountCurve] = None,
     ):
         self._fixLeg = FixedLeg(
             fixedRate=fixedRate,
-            curve=curve,
             schedule=Schedule(
                 effectiveDate=effectiveDate,
                 terminationDate=calendar.advance(
@@ -48,14 +47,15 @@ class Deposit:
             ),
             businessDayConvention=businessDayConvention,
             dayCounter=dayCounter,
-            notional=notional
+            notional=notional,
+            discountCurve=curve
         )
 
     def npv(self, curve: Optional[DiscountCurve] = None) -> float:
         return self._fixLeg._notional
 
     def getFixRate(self) -> float:
-        return self._fixLeg.getFixRate()
+        return self._fixLeg.getFixedRate()
 
     def getParRate(self, curve: Optional[DiscountCurve] = None) -> float:
         # TODO add raise if len bigger than 1

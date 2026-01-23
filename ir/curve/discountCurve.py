@@ -64,6 +64,3 @@ class DiscountCurve(GenericCurve):
 
     def getDiscountFactor(self, x: date) -> FloatOrVectorType:
         return self._interpolate(x)
-
-    def __call__(self, x: date) -> FloatOrVectorType:
-        return self._interpolate(x)

@@ -38,7 +38,6 @@ class InterestRateSwap(Swap):
         # TODO add leg2 params
         super().__init__(
             receiveLeg=FloatingLeg(
-                curve=curve,
                 schedule=Schedule(
                     effectiveDate=effectiveDate,
                     terminationDate=terminationDate,
@@ -52,11 +51,11 @@ class InterestRateSwap(Swap):
                 businessDayConvention=businessDayConvention,
                 dayCounter=dayCounter if floatLegDayCounter is None
                     else floatLegDayCounter,
-                notional=notional
+                notional=notional,
+                discountCurve=curve,
             ),
             payLeg=FixedLeg(
                 fixedRate=fixedRate,
-                curve=curve,
                 schedule=Schedule(
                     effectiveDate=effectiveDate,
                     terminationDate=terminationDate,
@@ -69,6 +68,7 @@ class InterestRateSwap(Swap):
                 ),
                 businessDayConvention=businessDayConvention,
                 dayCounter=dayCounter,
-                notional=notional
+                notional=notional,
+                discountCurve=curve,
             )
         )

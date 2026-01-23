@@ -56,7 +56,7 @@ class SwapTest(TestCase):
 
         fixedLeg1 = FixedLeg(
             fixedRate=fixedRatePar,
-            curve=self._curve,
+            discountCurve=self._curve,
             schedule=self._fixedSchedule,
             businessDayConvention=self._businessDayConvention,
             dayCounter=self._dayCounter,
@@ -65,7 +65,7 @@ class SwapTest(TestCase):
 
         fixedLeg2 = FixedLeg(
             fixedRate=1.15 / 100,
-            curve=self._curve,
+            discountCurve=self._curve,
             schedule=self._fixedSchedule,
             businessDayConvention=self._businessDayConvention,
             dayCounter=self._dayCounter,
@@ -73,7 +73,7 @@ class SwapTest(TestCase):
         )
 
         floatingLeg = FloatingLeg(
-            curve=self._curve,
+            discountCurve=self._curve,
             schedule=self._floatingSchedule,
             businessDayConvention=self._businessDayConvention,
             dayCounter=self._dayCounter,

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ir.curve.discountCurve import DiscountCurve
+from ir.curve.genericCurve import GenericCurve
 from ir.dayCounter.genericDayCounter import GenericDayCounter
 from ir.legs.genericLeg import GenericLeg
 from ir.projectTyping.floatVectorType import FloatVectorType
@@ -13,31 +13,25 @@ class FloatingLeg(GenericLeg):
 
     def __init__(
             self,
-            curve: DiscountCurve,
             schedule: GenericSchedule,
             businessDayConvention: GenericBusinessDayConvention,
             dayCounter: GenericDayCounter,
-            notional: float = 1.
+            notional: float = 1.,
+            discountCurve: Optional[GenericCurve] = None,
+            forwardCurve: Optional[GenericCurve] = None
     ):
         super().__init__(
-            curve=curve,
             schedule=schedule,
             businessDayConvention=businessDayConvention,
             dayCounter=dayCounter,
-            notional=notional
+            notional=notional,
+            discountCurve=discountCurve,
+            forwardCurve=forwardCurve
         )
-        self._forwardRates = self._getForwardRates(curve)
 
     def getCashFlows(
             self,
-            curve: Optional[DiscountCurve] = None
+            curve: Optional[GenericCurve] = None
     ) -> FloatVectorType:
-        forwardRates = self._forwardRates
-        discountFactors = self._discountFactors
-
-        if curve is not None:
-            forwardRates = self._getForwardRates(curve)
-            discountFactors = self._getDiscountFactors(curve)
-
-        return self._notional * forwardRates \
-                    * discountFactors * self._accrualYearFractions
+        return self._notional * self._getForwardRates(curve) \
+            * self._getDiscountFactors(curve) * self._accrualYearFractions

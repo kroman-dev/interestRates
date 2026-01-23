@@ -32,6 +32,6 @@ class Swap:
             * self._payLeg._accrualYearFractions
         ) / self._payLeg._notional
 
-    def getFixRate(self) -> float:
+    def getFixedRate(self) -> float:
         # TODO payLeg may dont have getFixRate method
-        return self._payLeg.getFixRate()
+        return self._payLeg.getFixedRate()

@@ -90,7 +90,7 @@ class CurveBootstrappingTest(TestCase):
         self.assertTrue(convergenceStatus)
 
         for swap in self._swaps:
-            with self.subTest(f"{swap.getFixRate()}"):
+            with self.subTest(f"{swap.getFixedRate()}"):
                 self.assertAlmostEqual(
                     0,
                     swap.npv(curve).realPart

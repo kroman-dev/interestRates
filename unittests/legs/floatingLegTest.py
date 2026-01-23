@@ -16,15 +16,13 @@ class FloatingLegTest(TestCase):
 
     def setUp(self):
         self._dayCounter = Thirty360BondBasis
-        self._curveDates = [
-            date(2024, 1, 1),
-            date(2024, 7, 1),
-            date(2025, 1, 1)
-        ]
-        self._discountFactors = [1.0, 0.8, 0.5]
         self._curve = DiscountCurve(
-            dates=self._curveDates,
-            discountFactors=self._discountFactors,
+            dates=[
+                date(2024, 1, 1),
+                date(2024, 7, 1),
+                date(2025, 1, 1)
+            ],
+            discountFactors=[1.0, 0.8, 0.5],
             dayCounter=self._dayCounter
         )
 
@@ -39,15 +37,27 @@ class FloatingLegTest(TestCase):
         self._schedule = Mock(spec=GenericSchedule)
         self._schedule.getSchedule.return_value = self._scheduleData
 
-        self._floatingLeg = FloatingLeg(
-            curve=self._curve,
+        self._sampleLeg1 = FloatingLeg(
             schedule=self._schedule,
             businessDayConvention=self._businessDayConvention,
             dayCounter=self._dayCounter
         )
+        self._sampleLeg2 = FloatingLeg(
+            schedule=self._schedule,
+            businessDayConvention=self._businessDayConvention,
+            dayCounter=self._dayCounter,
+            discountCurve=self._curve
+        )
 
     def testCashFlows(self):
-        np.testing.assert_array_almost_equal(
-            [0.2, 0.3],
-            self._floatingLeg.getCashFlows()
-        )
+        expectedAnswer = [0.2, 0.3]
+        with self.subTest("with input curve"):
+            np.testing.assert_array_almost_equal(
+                expectedAnswer,
+                self._sampleLeg1.getCashFlows(self._curve)
+            )
+        with self.subTest("with internal curve"):
+            np.testing.assert_array_almost_equal(
+                expectedAnswer,
+                self._sampleLeg2.getCashFlows()
+            )

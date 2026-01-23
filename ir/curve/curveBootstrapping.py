@@ -27,7 +27,7 @@ class CurveBootstrapping:
             [1] Darbyshire, Pricing and trading interest rate derivatives
         """
         self._swaps = swaps
-        self._swapsRates = [swap.getFixRate() for swap in swaps]
+        self._swapsRates = [swap.getFixedRate() for swap in swaps]
         self._initialGuessNodes = initialGuessNodes
         self._curveInterpolator = curveInterpolator
         self._curveDates = list(initialGuessNodes.keys())
@@ -43,7 +43,7 @@ class CurveBootstrapping:
             interpolator=self._curveInterpolator
         )
         self._swapsParRates = np.array([
-            swap.getFixRate() for swap in self._swaps
+            swap.getFixedRate() for swap in self._swaps
         ]).transpose()
 
         self._bootstrappingStatus = 'unknown'

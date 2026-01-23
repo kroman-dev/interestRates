@@ -139,9 +139,9 @@ class SwapTest(TestCase):
             )
 
         for swap in self._swaps:
-            with self.subTest(f"{swap.getFixRate()}"):
+            with self.subTest(f"{swap.getFixedRate()}"):
                 self.assertAlmostEqual(
-                    swap.getFixRate(),
+                    swap.getFixedRate(),
                     swap.getParRate(self._targetCurve)
                 )
 
@@ -157,7 +157,7 @@ class SwapTest(TestCase):
 
         with self.subTest('external'):
             self.assertAlmostEqual(
-                -self.notional * self._swap2._payLeg.getFixRate() \
+                -self.notional * self._swap2._payLeg.getFixedRate() \
                 * self._swap2._payLeg._accrualYearFractions[0],
                 self._swap2.npv(
                     DiscountCurve(
@@ -174,7 +174,7 @@ class SwapTest(TestCase):
             )
 
         for swap in self._swaps:
-            with self.subTest(f"{swap.getFixRate()}"):
+            with self.subTest(f"{swap.getFixedRate()}"):
                 self.assertAlmostEqual(
                     0.,
                     swap.npv(self._targetCurve)
