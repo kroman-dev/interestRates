@@ -14,7 +14,6 @@ class FloatingLeg(GenericLeg):
     def __init__(
             self,
             schedule: GenericSchedule,
-            businessDayConvention: GenericBusinessDayConvention,
             dayCounter: GenericDayCounter,
             notional: float = 1.,
             discountCurve: Optional[GenericCurve] = None,
@@ -22,7 +21,6 @@ class FloatingLeg(GenericLeg):
     ):
         super().__init__(
             schedule=schedule,
-            businessDayConvention=businessDayConvention,
             dayCounter=dayCounter,
             notional=notional,
             discountCurve=discountCurve,

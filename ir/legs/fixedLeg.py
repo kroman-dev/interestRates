@@ -15,7 +15,6 @@ class FixedLeg(GenericLeg):
             self,
             fixedRate: float,
             schedule: GenericSchedule,
-            businessDayConvention: GenericBusinessDayConvention,
             dayCounter: GenericDayCounter,
             notional: float = 1.,
             discountCurve: Optional[GenericCurve] = None,
@@ -23,7 +22,6 @@ class FixedLeg(GenericLeg):
     ):
         super().__init__(
             schedule=schedule,
-            businessDayConvention=businessDayConvention,
             dayCounter=dayCounter,
             notional=notional,
             discountCurve=discountCurve,

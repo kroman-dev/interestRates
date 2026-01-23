@@ -45,20 +45,17 @@ class Deposit(BootstrapInstrument):
                 calendar=calendar,
                 paymentLag=0
             ),
-            businessDayConvention=businessDayConvention,
             dayCounter=dayCounter,
             notional=notional,
             discountCurve=curve
         )
 
     def npv(self, curve: Optional[DiscountCurve] = None) -> float:
-        return self._fixLeg._notional
-
-    def getFixRate(self) -> float:
-        return self._fixLeg.getFixedRate()
+        raise self._fixLeg.npv(curve)
 
     def getParRate(self, curve: Optional[DiscountCurve] = None) -> float:
-        # TODO add raise if len bigger than 1
+        if len(self._fixLeg._accrualYearFractions) > 1:
+            raise ValueError('Incorrect schedule')
         return 1 / self._fixLeg._accrualYearFractions[0] * (
             curve.getDiscountFactor(
                 # be more accurate -> look at article and refactor

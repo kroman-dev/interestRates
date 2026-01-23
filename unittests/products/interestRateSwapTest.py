@@ -145,8 +145,6 @@ class SwapTest(TestCase):
                     swap.getParRate(self._targetCurve)
                 )
 
-
-
     def testNpv(self):
         with self.subTest('internal'):
             self.assertAlmostEqual(

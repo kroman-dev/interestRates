@@ -48,7 +48,6 @@ class InterestRateSwap(Swap):
                     calendar=calendar,
                     paymentLag=paymentLag
                 ),
-                businessDayConvention=businessDayConvention,
                 dayCounter=dayCounter if floatLegDayCounter is None
                     else floatLegDayCounter,
                 notional=notional,
@@ -66,7 +65,6 @@ class InterestRateSwap(Swap):
                     calendar=calendar,
                     paymentLag=paymentLag
                 ),
-                businessDayConvention=businessDayConvention,
                 dayCounter=dayCounter,
                 notional=notional,
                 discountCurve=curve,

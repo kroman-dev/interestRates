@@ -6,8 +6,6 @@ import numpy as np
 from ir.curve.genericCurve import GenericCurve
 from ir.dayCounter.genericDayCounter import GenericDayCounter
 from ir.projectTyping.floatVectorType import FloatVectorType
-from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
-    GenericBusinessDayConvention
 from ir.scheduler.schedule.genericSchedule import GenericSchedule
 
 
@@ -16,7 +14,6 @@ class GenericLeg(ABC):
     def __init__(
             self,
             schedule: GenericSchedule,
-            businessDayConvention: GenericBusinessDayConvention,
             dayCounter: GenericDayCounter,
             notional: float,
             discountCurve: Optional[GenericCurve] = None,
@@ -28,7 +25,6 @@ class GenericLeg(ABC):
             else forwardCurve
         self._schedule = schedule
         self._scheduleData = self._schedule.getSchedule()
-        self._businessDayConvention = businessDayConvention
         self._dayCounter = dayCounter
         self._notional = notional
 
@@ -39,6 +35,9 @@ class GenericLeg(ABC):
                 self._scheduleData.accrualEndDates
             )
         ])
+
+    def getSchedule(self) -> GenericSchedule:
+        return self._schedule
 
     def _getForwardRates(
             self,

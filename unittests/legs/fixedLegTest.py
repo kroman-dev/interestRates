@@ -7,7 +7,6 @@ import numpy as np
 from ir.curve.discountCurve import DiscountCurve
 from ir.dayCounter.thirty360BondBasis import Thirty360BondBasis
 from ir.legs.fixedLeg import FixedLeg
-from ir.scheduler.businessDayConvention.noConvention import NoConvention
 from ir.scheduler.schedule.genericSchedule import GenericSchedule
 from ir.scheduler.schedule.scheduleData import ScheduleData
 
@@ -26,8 +25,6 @@ class FixedLegTest(TestCase):
             dayCounter=self._dayCounter
         )
 
-        self._businessDayConvention = NoConvention()
-
         self._scheduleData = ScheduleData(
             accrualStartDates=[date(2024, 1, 1), date(2024, 7, 1)],
             accrualEndDates=[date(2024, 7, 1), date(2025, 1, 1)],
@@ -42,13 +39,11 @@ class FixedLegTest(TestCase):
         self._sampleLeg1 = FixedLeg(
             fixedRate=self._fixedRate,
             schedule=self._schedule,
-            businessDayConvention=self._businessDayConvention,
             dayCounter=self._dayCounter
         )
         self._sampleLeg2 = FixedLeg(
             fixedRate=self._fixedRate,
             schedule=self._schedule,
-            businessDayConvention=self._businessDayConvention,
             dayCounter=self._dayCounter,
             discountCurve=self._discountCurve
         )
