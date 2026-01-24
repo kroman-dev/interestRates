@@ -20,9 +20,7 @@ class GenericLeg(ABC):
             forwardCurve: Optional[GenericCurve] = None
     ):
         self._discountCurve = discountCurve
-        self._forwardCurve = discountCurve \
-            if forwardCurve is None and discountCurve is not None \
-            else forwardCurve
+        self._forwardCurve = forwardCurve
         self._schedule = schedule
         self._scheduleData = self._schedule.getSchedule()
         self._dayCounter = dayCounter
@@ -35,6 +33,12 @@ class GenericLeg(ABC):
                 self._scheduleData.accrualEndDates
             )
         ])
+
+    def getDiscountCurve(self) -> Optional[GenericCurve]:
+        return self._discountCurve
+
+    def getForwardCurve(self) -> Optional[GenericCurve]:
+        return self._forwardCurve
 
     def getNotional(self) -> float:
         return self._notional
@@ -84,11 +88,24 @@ class GenericLeg(ABC):
         self._forwardCurve = curve
 
     @abstractmethod
+    def _getCashFlows(
+            self,
+            discountCurve: Optional[GenericCurve] = None,
+            forwardCurve: Optional[GenericCurve] = None
+    ) -> FloatVectorType:
+        pass
+
     def getCashFlows(
             self,
             curve: Optional[GenericCurve] = None
     ) -> FloatVectorType:
-        pass
+        discountCurve = curve
+        if self.getDiscountCurve() is not None:
+            discountCurve = self._discountCurve
+        return self._getCashFlows(
+            discountCurve=discountCurve,
+            forwardCurve=curve
+        )
 
     def npv(self, curve: Optional[GenericCurve] = None) -> float:
         return np.sum(self.getCashFlows(curve))

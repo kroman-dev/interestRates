@@ -27,7 +27,10 @@ class Swap(BootstrapInstrument):
         The forward swap rate that RFS(fixRate) = 0
             Brigo ex. (1.25) p.15
         """
+        discountCurve = curve if self._receiveLeg.getDiscountCurve() is None \
+            else self._receiveLeg.getDiscountCurve()
+
         return self._receiveLeg.npv(curve) / np.sum(
-            self._payLeg.getDiscountFactors(curve)
+            self._payLeg.getDiscountFactors(discountCurve)
             * self._payLeg.getAccruals()
         ) / self._payLeg.getNotional()

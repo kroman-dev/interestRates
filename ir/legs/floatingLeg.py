@@ -4,8 +4,6 @@ from ir.curve.genericCurve import GenericCurve
 from ir.dayCounter.genericDayCounter import GenericDayCounter
 from ir.legs.genericLeg import GenericLeg
 from ir.projectTyping.floatVectorType import FloatVectorType
-from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
-    GenericBusinessDayConvention
 from ir.scheduler.schedule.genericSchedule import GenericSchedule
 
 
@@ -27,9 +25,11 @@ class FloatingLeg(GenericLeg):
             forwardCurve=forwardCurve
         )
 
-    def getCashFlows(
+    def _getCashFlows(
             self,
-            curve: Optional[GenericCurve] = None
+            discountCurve: Optional[GenericCurve] = None,
+            forwardCurve: Optional[GenericCurve] = None
     ) -> FloatVectorType:
-        return self._notional * self.getForwardRates(curve) \
-            * self.getDiscountFactors(curve) * self._accrualYearFractions
+        return self._notional * self.getForwardRates(forwardCurve) \
+            * self.getDiscountFactors(discountCurve) \
+            * self._accrualYearFractions

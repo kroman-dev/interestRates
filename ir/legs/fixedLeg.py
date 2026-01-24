@@ -30,9 +30,12 @@ class FixedLeg(GenericLeg):
     def getFixedRate(self) -> float:
         return self._fixedRate
 
-    def getCashFlows(
+    def _getCashFlows(
             self,
-            curve: Optional[GenericCurve] = None
+            discountCurve: Optional[GenericCurve] = None,
+            forwardCurve: Optional[GenericCurve] = None
     ) -> FloatVectorType:
         return self._notional * self._fixedRate \
-            * self._accrualYearFractions * self.getDiscountFactors(curve)
+            * self._accrualYearFractions * self.getDiscountFactors(
+                discountCurve
+            )

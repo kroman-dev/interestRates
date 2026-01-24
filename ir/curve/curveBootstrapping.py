@@ -27,7 +27,6 @@ class CurveBootstrapping:
             I use keys v{index}
             [1] Darbyshire, Pricing and trading interest rate derivatives
         """
-        # TODO add quotes list as input
         self._instruments = instruments
         self._initialGuessNodes = initialGuessNodes
         self._curveInterpolator = curveInterpolator

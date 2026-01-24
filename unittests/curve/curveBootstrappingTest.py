@@ -14,14 +14,7 @@ from ir.scheduler.stubPeriod.shortBack import ShortBack
 class CurveBootstrappingTest(TestCase):
 
     def setUp(self):
-        self._dayCounter = Act365Fixed
-        self._effectiveDate = date(2022, 1, 1)
-        self._businessDayConvention = NoConvention()
-        self._calendar = NoCalendar()
-        self._stubPeriod = ShortBack()
-        self._fixFrequency = '1Y'
-        self._floatFrequency = '1Y'
-        self._endOfMonth = False
+        self._dayCounter = Act365Fixed()
 
         dates = [
             date(2022, 1, 1),
@@ -37,25 +30,20 @@ class CurveBootstrappingTest(TestCase):
             for _date, discountFactor in zip(dates, values)
         }
 
-        self._initialCurve = DiscountCurve(
-            dates=dates,
-            discountFactors=values,
-            dayCounter=self._dayCounter
-        )
-
-        createSwap = lambda fixedRate, terminationDate: InterestRateSwap(
-            discountCurve=self._initialCurve,
-            fixedRate=fixedRate,
-            effectiveDate=self._effectiveDate,
-            terminationDate=terminationDate,
-            fixFrequency=self._fixFrequency,
-            floatFrequency=self._floatFrequency,
-            endOfMonth=self._endOfMonth,
-            businessDayConvention=self._businessDayConvention,
-            dayCounter=self._dayCounter,
-            stubPeriod=self._stubPeriod,
-            calendar=self._calendar,
-            notional=1.
+        createSwap = lambda fixedRate, terminationDate, discountCurve = None:\
+            InterestRateSwap(
+                fixedRate=fixedRate,
+                effectiveDate=date(2022, 1, 1),
+                terminationDate=terminationDate,
+                fixFrequency='1Y',
+                floatFrequency='1Y',
+                endOfMonth=False,
+                businessDayConvention=NoConvention(),
+                dayCounter=self._dayCounter,
+                stubPeriod=ShortBack(),
+                calendar=NoCalendar(),
+                notional=1.,
+                discountCurve=discountCurve
         )
 
         self._swapQuotes = [
@@ -78,8 +66,12 @@ class CurveBootstrappingTest(TestCase):
             ],
             dayCounter=self._dayCounter
         )
+        self._swaps2 = [
+            createSwap(fixRate, endDate, self._targetCurve)
+            for fixRate, endDate in zip(self._swapQuotes, dates[1:])
+        ]
 
-    def testSolve(self):
+    def testSolve1(self):
         curve, convergenceStatus = CurveBootstrapping(
             initialGuessNodes=self._initialNodes,
             instruments=self._swaps,
@@ -91,6 +83,24 @@ class CurveBootstrappingTest(TestCase):
         self.assertTrue(convergenceStatus)
 
         for swap, quote in zip(self._swaps, self._swapQuotes):
+            with self.subTest(f"{quote}"):
+                self.assertAlmostEqual(
+                    0,
+                    swap.npv(curve).realPart
+                )
+
+    def testSolve2(self):
+        curve, convergenceStatus = CurveBootstrapping(
+            initialGuessNodes=self._initialNodes,
+            instruments=self._swaps2,
+            instrumentsQuotes=self._swapQuotes,
+            dayCounter=self._dayCounter,
+            curveInterpolator=LogLinearInterpolator
+        ).solve()
+
+        self.assertTrue(convergenceStatus)
+
+        for swap, quote in zip(self._swaps2, self._swapQuotes):
             with self.subTest(f"{quote}"):
                 self.assertAlmostEqual(
                     0,

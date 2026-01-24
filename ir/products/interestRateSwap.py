@@ -3,7 +3,6 @@ from typing import Optional
 
 from ir.legs.fixedLeg import FixedLeg
 from ir.legs.floatingLeg import FloatingLeg
-from ir.products.bootstrapInstrument import BootstrapInstrument
 from ir.products.swap import Swap
 from ir.curve.genericCurve import GenericCurve
 from ir.dayCounter.genericDayCounter import GenericDayCounter
@@ -30,7 +29,7 @@ class InterestRateSwap(Swap):
             dayCounter: GenericDayCounter,
             stubPeriod: GenericStubPeriod,
             calendar: GenericCalendar,
-            discountCurve: GenericCurve,
+            discountCurve: Optional[GenericCurve] = None,
             forwardCurve: Optional[GenericCurve] = None,
             notional: float = 1,
             paymentLag: int = 0,

@@ -15,13 +15,22 @@ class FloatingLegTest(TestCase):
 
     def setUp(self):
         self._dayCounter = Thirty360BondBasis
-        self._curve = DiscountCurve(
+        self._discountCurve = DiscountCurve(
             dates=[
                 date(2024, 1, 1),
                 date(2024, 7, 1),
                 date(2025, 1, 1)
             ],
             discountFactors=[1.0, 0.8, 0.5],
+            dayCounter=self._dayCounter
+        )
+        self._forwardCurve = DiscountCurve(
+            dates=[
+                date(2024, 1, 1),
+                date(2024, 7, 1),
+                date(2025, 1, 1)
+            ],
+            discountFactors=[1.0, 0.9, 0.7],
             dayCounter=self._dayCounter
         )
 
@@ -41,18 +50,26 @@ class FloatingLegTest(TestCase):
         self._sampleLeg2 = FloatingLeg(
             schedule=self._schedule,
             dayCounter=self._dayCounter,
-            discountCurve=self._curve
+            discountCurve=self._discountCurve
         )
 
     def testCashFlows(self):
-        expectedAnswer = [0.2, 0.3]
+        with self.subTest("with input curve 1"):
+            np.testing.assert_array_almost_equal(
+                [0.2, 0.3],
+                self._sampleLeg1.getCashFlows(self._discountCurve)
+            )
+        with self.subTest("with input curve 2"):
+            np.testing.assert_array_almost_equal(
+                [0.2, 0.3],
+                self._sampleLeg2.getCashFlows(self._discountCurve)
+            )
+
         with self.subTest("with input curve"):
             np.testing.assert_array_almost_equal(
-                expectedAnswer,
-                self._sampleLeg1.getCashFlows(self._curve)
-            )
-        with self.subTest("with internal curve"):
-            np.testing.assert_array_almost_equal(
-                expectedAnswer,
-                self._sampleLeg2.getCashFlows()
+                [
+                    0.8 * 0.5 * (1 / 0.5 * (1. / 0.9  - 1)),
+                    0.5 * (0.9 / 0.7 - 1)
+                ],
+                self._sampleLeg2.getCashFlows(self._forwardCurve)
             )
