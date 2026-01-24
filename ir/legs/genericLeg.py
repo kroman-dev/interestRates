@@ -39,6 +39,9 @@ class GenericLeg(ABC):
     def getSchedule(self) -> GenericSchedule:
         return self._schedule
 
+    def getAccruals(self) -> FloatVectorType:
+        return self._accrualYearFractions
+
     def _getForwardRates(
             self,
             curve: Optional[GenericCurve] = None
@@ -76,16 +79,6 @@ class GenericLeg(ABC):
 
     def setForwardCurve(self, curve: GenericCurve):
         self._forwardCurve = curve
-
-    def _getDiscountFactors(
-            self,
-            curve: Optional[GenericCurve] = None
-    ) -> FloatVectorType:
-        _curve = self._discountCurve if curve is None else curve
-        return np.array([
-            _curve.getDiscountFactor(paymentDate)
-            for paymentDate in self._scheduleData.paymentDates
-        ])
 
     @abstractmethod
     def getCashFlows(

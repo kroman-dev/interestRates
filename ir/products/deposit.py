@@ -3,7 +3,7 @@ from typing import Optional
 
 from ir.products.bootstrapInstrument import BootstrapInstrument
 from ir.scheduler.period.period import Period
-from ir.curve.discountCurve import DiscountCurve
+from ir.curve.genericCurve import GenericCurve
 from ir.dayCounter.genericDayCounter import GenericDayCounter
 from ir.legs.fixedLeg import FixedLeg
 from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
@@ -14,7 +14,9 @@ from ir.scheduler.stubPeriod.genericStubPeriod import GenericStubPeriod
 
 
 class Deposit(BootstrapInstrument):
-
+    """
+        Uncollateralized, so only one curve as input
+    """
     def __init__(
             self,
             fixedRate: float,
@@ -26,9 +28,9 @@ class Deposit(BootstrapInstrument):
             stubPeriod: GenericStubPeriod,
             calendar: GenericCalendar,
             notional: float = 1.,
-            curve: Optional[DiscountCurve] = None,
+            curve: Optional[GenericCurve] = None,
     ):
-        self._fixLeg = FixedLeg(
+        self._fixedLeg = FixedLeg(
             fixedRate=fixedRate,
             schedule=Schedule(
                 effectiveDate=effectiveDate,
@@ -50,17 +52,17 @@ class Deposit(BootstrapInstrument):
             discountCurve=curve
         )
 
-    def npv(self, curve: Optional[DiscountCurve] = None) -> float:
-        raise self._fixLeg.npv(curve)
+    def npv(self, curve: Optional[GenericCurve] = None) -> float:
+        raise self._fixedLeg.npv(curve)
 
-    def getParRate(self, curve: Optional[DiscountCurve] = None) -> float:
-        if len(self._fixLeg._accrualYearFractions) > 1:
+    def getParRate(self, curve: Optional[GenericCurve] = None) -> float:
+        scheduleData = self._fixedLeg.getSchedule().getSchedule()
+        if len(scheduleData.accrualStartDates) > 1:
             raise ValueError('Incorrect schedule')
-        return 1 / self._fixLeg._accrualYearFractions[0] * (
+        return 1 / self._fixedLeg.getAccruals()[0] * (
             curve.getDiscountFactor(
-                # be more accurate -> look at article and refactor
-                self._fixLeg._scheduleData.accrualStartDates[0]
+                scheduleData.accrualStartDates[0]
             ) / curve.getDiscountFactor(
-                self._fixLeg._scheduleData.paymentDates[0]
+                scheduleData.paymentDates[0]
             ) - 1
         )

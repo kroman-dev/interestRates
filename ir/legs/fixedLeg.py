@@ -4,8 +4,6 @@ from ir.curve.genericCurve import GenericCurve
 from ir.legs.genericLeg import GenericLeg
 from ir.dayCounter.genericDayCounter import GenericDayCounter
 from ir.projectTyping.floatVectorType import FloatVectorType
-from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
-    GenericBusinessDayConvention
 from ir.scheduler.schedule.genericSchedule import GenericSchedule
 
 
