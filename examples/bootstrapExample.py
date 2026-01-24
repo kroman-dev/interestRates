@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
     curve, convergenceStatus = CurveBootstrapping(
         initialGuessNodes=initialNodes,
-        swaps=swaps,
+        instruments=swaps,
         dayCounter=dayCounter,
         curveInterpolator=LogLinearInterpolator
     ).solve()

@@ -44,7 +44,7 @@ class CurveBootstrappingTest(TestCase):
         )
 
         createSwap = lambda fixedRate, terminationDate: InterestRateSwap(
-            curve=self._initialCurve,
+            discountCurve=self._initialCurve,
             fixedRate=fixedRate,
             effectiveDate=self._effectiveDate,
             terminationDate=terminationDate,
@@ -82,15 +82,16 @@ class CurveBootstrappingTest(TestCase):
     def testSolve(self):
         curve, convergenceStatus = CurveBootstrapping(
             initialGuessNodes=self._initialNodes,
-            swaps=self._swaps,
+            instruments=self._swaps,
+            instrumentsQuotes=self._swapQuotes,
             dayCounter=self._dayCounter,
             curveInterpolator=LogLinearInterpolator
         ).solve()
 
         self.assertTrue(convergenceStatus)
 
-        for swap in self._swaps:
-            with self.subTest(f"{swap.getFixedRate()}"):
+        for swap, quote in zip(self._swaps, self._swapQuotes):
+            with self.subTest(f"{quote}"):
                 self.assertAlmostEqual(
                     0,
                     swap.npv(curve).realPart

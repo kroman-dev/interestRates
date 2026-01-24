@@ -9,7 +9,7 @@ from ir.curve.interpolator.genericInterpolator import GenericInterpolator
 from ir.curve.interpolator.logLinearInterpolator import LogLinearInterpolator
 from ir.dayCounter.genericDayCounter import GenericDayCounter
 from ir.dualNumbers.dualNumber import DualNumber
-from ir.products.interestRateSwap import InterestRateSwap
+from ir.products.bootstrapInstrument import BootstrapInstrument
 
 
 class CurveBootstrapping:
@@ -17,7 +17,8 @@ class CurveBootstrapping:
     def __init__(
             self,
             initialGuessNodes: Dict[date, float],
-            swaps: List[InterestRateSwap],
+            instruments: List[BootstrapInstrument],
+            instrumentsQuotes: List[float],
             dayCounter: GenericDayCounter,
             curveInterpolator: GenericInterpolator = LogLinearInterpolator
     ):
@@ -26,8 +27,8 @@ class CurveBootstrapping:
             I use keys v{index}
             [1] Darbyshire, Pricing and trading interest rate derivatives
         """
-        self._swaps = swaps
-        self._swapsRates = [swap.getFixedRate() for swap in swaps]
+        # TODO add quotes list as input
+        self._instruments = instruments
         self._initialGuessNodes = initialGuessNodes
         self._curveInterpolator = curveInterpolator
         self._curveDates = list(initialGuessNodes.keys())
@@ -42,20 +43,18 @@ class CurveBootstrapping:
             dayCounter=self._curveDayCounter,
             interpolator=self._curveInterpolator
         )
-        self._swapsParRates = np.array([
-            swap.getFixedRate() for swap in self._swaps
-        ]).transpose()
+        self._instrumentsQuotes = np.array(instrumentsQuotes).transpose()
 
         self._bootstrappingStatus = 'unknown'
         self._regularizationParameter = 1000
         self._solverMethodName = "GaussNewton"
 
         self._nodePointLength = len(list(self._initialGuessNodes.keys())) - 1
-        if self._nodePointLength == len(swaps):
+        if self._nodePointLength == len(instruments):
             self._bootstrappingStatus = 'completely specified curve'
-        elif self._nodePointLength < len(swaps):
+        elif self._nodePointLength < len(instruments):
             self._bootstrappingStatus = 'overspecified curve'
-        elif self._nodePointLength > len(swaps):
+        elif self._nodePointLength > len(instruments):
             self._bootstrappingStatus = 'underspecified curve'
             self._solverMethodName = "LevenbergMarquardt"
         else:
@@ -77,10 +76,10 @@ class CurveBootstrapping:
 
     def _calculateMetrics(self, curve: DiscountCurve):
         parRatesFromCurve = np.array([
-            swap.getParRate(curve) for swap in self._swaps
+            instrument.getParRate(curve) for instrument in self._instruments
         ]).transpose()
 
-        difference = parRatesFromCurve - self._swapsParRates
+        difference = parRatesFromCurve - self._instrumentsQuotes
 
         objectiveValue = np.matmul(difference.transpose(), difference)
         gradientObjective = np.array(

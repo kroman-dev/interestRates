@@ -12,7 +12,7 @@ from ir.scheduler.stubPeriod.shortBack import ShortBack
 class SwapTest(TestCase):
 
     def setUp(self):
-        self._dayCounter = Act365Fixed
+        self._dayCounter = Act365Fixed()
         self._effectiveDate = date(2022, 2, 14)
         self._terminationDate = date(2022, 6, 14)
         self._businessDayConvention = NoConvention()
@@ -34,7 +34,7 @@ class SwapTest(TestCase):
         self.notional = 1e9
 
         self._swap1 = InterestRateSwap(
-            curve=self._curve,
+            discountCurve=self._curve,
             fixedRate=self._fixedRatePar,
             effectiveDate=self._effectiveDate,
             terminationDate=self._terminationDate,
@@ -49,7 +49,7 @@ class SwapTest(TestCase):
         )
 
         self._swap2 = InterestRateSwap(
-            curve=self._curve,
+            discountCurve=self._curve,
             fixedRate=fixedSomeRate,
             effectiveDate=self._effectiveDate,
             terminationDate=self._terminationDate,
@@ -94,7 +94,7 @@ class SwapTest(TestCase):
         ]
 
         createSwap = lambda fixedRate, terminationDate: InterestRateSwap(
-            curve=self._initialGuessCurve,
+            discountCurve=self._initialGuessCurve,
             fixedRate=fixedRate,
             effectiveDate=date(2022, 1, 1),
             terminationDate=terminationDate,
@@ -139,9 +139,9 @@ class SwapTest(TestCase):
             )
 
         for swap in self._swaps:
-            with self.subTest(f"{swap.getFixedRate()}"):
+            with self.subTest(f"{swap._payLeg.getFixedRate()}"):
                 self.assertAlmostEqual(
-                    swap.getFixedRate(),
+                    swap._payLeg.getFixedRate(),
                     swap.getParRate(self._targetCurve)
                 )
 
@@ -172,7 +172,7 @@ class SwapTest(TestCase):
             )
 
         for swap in self._swaps:
-            with self.subTest(f"{swap.getFixedRate()}"):
+            with self.subTest(f"{swap._payLeg.getFixedRate()}"):
                 self.assertAlmostEqual(
                     0.,
                     swap.npv(self._targetCurve)

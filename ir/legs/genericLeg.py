@@ -36,13 +36,16 @@ class GenericLeg(ABC):
             )
         ])
 
+    def getNotional(self) -> float:
+        return self._notional
+
     def getSchedule(self) -> GenericSchedule:
         return self._schedule
 
     def getAccruals(self) -> FloatVectorType:
         return self._accrualYearFractions
 
-    def _getForwardRates(
+    def getForwardRates(
             self,
             curve: Optional[GenericCurve] = None
     ) -> FloatVectorType:
@@ -64,7 +67,7 @@ class GenericLeg(ABC):
             )
         ])
 
-    def _getDiscountFactors(
+    def getDiscountFactors(
             self,
             curve: Optional[GenericCurve] = None
     ) -> FloatVectorType:

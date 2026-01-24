@@ -31,5 +31,5 @@ class FloatingLeg(GenericLeg):
             self,
             curve: Optional[GenericCurve] = None
     ) -> FloatVectorType:
-        return self._notional * self._getForwardRates(curve) \
-            * self._getDiscountFactors(curve) * self._accrualYearFractions
+        return self._notional * self.getForwardRates(curve) \
+            * self.getDiscountFactors(curve) * self._accrualYearFractions

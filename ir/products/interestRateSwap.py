@@ -3,8 +3,9 @@ from typing import Optional
 
 from ir.legs.fixedLeg import FixedLeg
 from ir.legs.floatingLeg import FloatingLeg
+from ir.products.bootstrapInstrument import BootstrapInstrument
 from ir.products.swap import Swap
-from ir.curve.discountCurve import DiscountCurve
+from ir.curve.genericCurve import GenericCurve
 from ir.dayCounter.genericDayCounter import GenericDayCounter
 from ir.scheduler.calendar.genericCalendar import GenericCalendar
 from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
@@ -15,11 +16,10 @@ from ir.scheduler.stubPeriod.genericStubPeriod import GenericStubPeriod
 
 class InterestRateSwap(Swap):
     """
-        vanilla IRS
+        Vanilla IRS
     """
     def __init__(
             self,
-            curve: DiscountCurve,
             fixedRate: float,
             effectiveDate: date,
             terminationDate: date,
@@ -30,6 +30,8 @@ class InterestRateSwap(Swap):
             dayCounter: GenericDayCounter,
             stubPeriod: GenericStubPeriod,
             calendar: GenericCalendar,
+            discountCurve: GenericCurve,
+            forwardCurve: Optional[GenericCurve] = None,
             notional: float = 1,
             paymentLag: int = 0,
             floatLegDayCounter: Optional[GenericDayCounter] = None
@@ -51,7 +53,8 @@ class InterestRateSwap(Swap):
                 dayCounter=dayCounter if floatLegDayCounter is None
                     else floatLegDayCounter,
                 notional=notional,
-                discountCurve=curve,
+                discountCurve=discountCurve,
+                forwardCurve=forwardCurve
             ),
             payLeg=FixedLeg(
                 fixedRate=fixedRate,
@@ -67,6 +70,7 @@ class InterestRateSwap(Swap):
                 ),
                 dayCounter=dayCounter,
                 notional=notional,
-                discountCurve=curve,
+                discountCurve=discountCurve,
+                forwardCurve=forwardCurve
             )
         )

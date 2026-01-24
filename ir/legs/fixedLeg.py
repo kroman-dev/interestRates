@@ -35,4 +35,4 @@ class FixedLeg(GenericLeg):
             curve: Optional[GenericCurve] = None
     ) -> FloatVectorType:
         return self._notional * self._fixedRate \
-            * self._accrualYearFractions * self._getDiscountFactors(curve)
+            * self._accrualYearFractions * self.getDiscountFactors(curve)
