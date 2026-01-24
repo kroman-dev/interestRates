@@ -196,10 +196,7 @@ class SwapTest(TestCase):
         )
         accrual = 20 / 365
         forward = (1 / 0.9975 - 1) / accrual
-        expectedValue = self._curve.getDiscountFactor(date(2022, 1, 21)) \
-                        * accrual * (forward - self._fixedRatePar)
         swapMultiCurve = InterestRateSwap(
-            discountCurve=self._curve,
             fixedRate=self._fixedRatePar,
             effectiveDate=date(2022, 1, 1),
             terminationDate=date(2022, 1, 21),
@@ -210,9 +207,51 @@ class SwapTest(TestCase):
             dayCounter=self._dayCounter,
             stubPeriod=self._stubPeriod,
             calendar=self._calendar,
-            notional=1.
+            notional=1.,
+            discountCurve=self._curve,
+            forwardCurve=forwardCurve
         )
-        self.assertAlmostEqual(
-            expectedValue,
-            swapMultiCurve.npv(forwardCurve)
-        )
+        with self.subTest('npv1'):
+            expectedValue = self._curve.getDiscountFactor(date(2022, 1, 21)) \
+                            * accrual * (forward - self._fixedRatePar)
+            self.assertAlmostEqual(
+                expectedValue,
+                swapMultiCurve.npv()
+            )
+
+        with self.subTest('npv2'):
+            expectedValue = forwardCurve.getDiscountFactor(date(2022, 1, 21)) \
+                            * accrual * (forward - self._fixedRatePar)
+            self.assertAlmostEqual(
+                expectedValue,
+                swapMultiCurve.npv(discountCurve=forwardCurve)
+            )
+
+        with self.subTest('getPartRate'):
+            with self.subTest('forwardCurve'):
+                self.assertAlmostEqual(
+                    forward,
+                    swapMultiCurve.getParRate(forwardCurve=forwardCurve)
+                )
+            with self.subTest('forwardCurve'):
+                self.assertAlmostEqual(
+                    forward,
+                    swapMultiCurve.getParRate()
+                )
+            with self.subTest('discountCurve'):
+                self.assertAlmostEqual(
+                    forward,
+                    swapMultiCurve.getParRate(discountCurve=self._curve)
+                )
+            with self.subTest('discountCurve and forwardCurve'):
+                self.assertAlmostEqual(
+                    forward,
+                    swapMultiCurve.getParRate(
+                        discountCurve=self._curve,
+                        forwardCurve=forwardCurve
+                    )
+                )
+
+
+
+

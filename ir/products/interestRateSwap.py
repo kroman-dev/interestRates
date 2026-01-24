@@ -1,8 +1,8 @@
 from datetime import date
 from typing import Optional
 
-from ir.legs.fixedLeg import FixedLeg
-from ir.legs.floatingLeg import FloatingLeg
+from ir.products.legs.fixedLeg import FixedLeg
+from ir.products.legs.floatingLeg import FloatingLeg
 from ir.products.swap import Swap
 from ir.curve.genericCurve import GenericCurve
 from ir.dayCounter.genericDayCounter import GenericDayCounter

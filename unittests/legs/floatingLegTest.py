@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 from ir.curve.discountCurve import DiscountCurve
 from ir.dayCounter.thirty360BondBasis import Thirty360BondBasis
-from ir.legs.floatingLeg import FloatingLeg
+from ir.products.legs.floatingLeg import FloatingLeg
 from ir.scheduler.schedule.genericSchedule import GenericSchedule
 from ir.scheduler.schedule.scheduleData import ScheduleData
 
@@ -52,6 +52,12 @@ class FloatingLegTest(TestCase):
             dayCounter=self._dayCounter,
             discountCurve=self._discountCurve
         )
+        self._sampleLeg3 = FloatingLeg(
+            schedule=self._schedule,
+            dayCounter=self._dayCounter,
+            discountCurve=self._discountCurve,
+            forwardCurve=self._forwardCurve
+        )
 
     def testCashFlows(self):
         with self.subTest("with input curve 1"):
@@ -71,5 +77,17 @@ class FloatingLegTest(TestCase):
                     0.8 * 0.5 * (1 / 0.5 * (1. / 0.9  - 1)),
                     0.5 * (0.9 / 0.7 - 1)
                 ],
-                self._sampleLeg2.getCashFlows(self._forwardCurve)
+                self._sampleLeg2.getCashFlows(
+                    forwardCurve=self._forwardCurve
+                )
             )
+
+        with self.subTest("with internal forward curve"):
+            np.testing.assert_array_almost_equal(
+                [
+                    0.8 * 0.5 * (1 / 0.5 * (1. / 0.9 - 1)),
+                    0.5 * (0.9 / 0.7 - 1)
+                ],
+                self._sampleLeg3.getCashFlows()
+            )
+

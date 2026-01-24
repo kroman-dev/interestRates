@@ -23,6 +23,7 @@ class CurveBootstrappingTest(TestCase):
             date(2027, 1, 1),
             date(2032, 1, 1)
         ]
+        self._dates = dates
         values = [1. for _ in range(len(dates))]
 
         self._initialNodes = {
@@ -30,7 +31,7 @@ class CurveBootstrappingTest(TestCase):
             for _date, discountFactor in zip(dates, values)
         }
 
-        createSwap = lambda fixedRate, terminationDate, discountCurve = None:\
+        createSwap = lambda fixedRate, terminationDate, discountCurve = None: \
             InterestRateSwap(
                 fixedRate=fixedRate,
                 effectiveDate=date(2022, 1, 1),
@@ -105,4 +106,90 @@ class CurveBootstrappingTest(TestCase):
                 self.assertAlmostEqual(
                     0,
                     swap.npv(curve).realPart
+                )
+
+    def testSolveMultiCurve1(self):
+        curve, convergenceStatus = CurveBootstrapping(
+            initialGuessNodes=self._initialNodes,
+            instruments=self._swaps,
+            instrumentsQuotes=self._swapQuotes,
+            dayCounter=self._dayCounter,
+            curveInterpolator=LogLinearInterpolator,
+            discountCurve=self._targetCurve
+        ).solve()
+
+        self.assertTrue(convergenceStatus)
+
+        for swap, quote in zip(self._swaps, self._swapQuotes):
+            with self.subTest(f"{quote}"):
+                self.assertAlmostEqual(
+                    0,
+                    swap.npv(curve).realPart
+                )
+
+    def testSolveMultiCurve2(self):
+
+        discountCurve = DiscountCurve(
+            dates=self._dates,
+            discountFactors=[
+                1.,
+                0.9680446596186105,
+                0.9480183694743251,
+                0.8905211762541432,
+                0.8054636028183167
+            ],
+            dayCounter=self._dayCounter
+        )
+        forwardCurve = DiscountCurve(
+            dates=self._dates,
+            discountFactors=[
+                1.,
+                0.862,
+                0.842,
+                0.792,
+                0.702
+            ],
+            dayCounter=self._dayCounter
+        )
+
+        createSwap = lambda fixedRate, terminationDate: \
+            InterestRateSwap(
+                fixedRate=None,
+                effectiveDate=date(2022, 1, 1),
+                terminationDate=terminationDate,
+                fixFrequency='1Y',
+                floatFrequency='1Y',
+                endOfMonth=False,
+                businessDayConvention=NoConvention(),
+                dayCounter=self._dayCounter,
+                stubPeriod=ShortBack(),
+                calendar=NoCalendar(),
+                notional=1.,
+                discountCurve=discountCurve,
+                forwardCurve=forwardCurve
+        )
+        swaps = [
+            createSwap(fixRate, endDate)
+            for fixRate, endDate in zip(self._swapQuotes, self._dates[1:])
+        ]
+        swapsQuotes = [swap.getParRate() for swap in swaps]
+
+        curve, convergenceStatus = CurveBootstrapping(
+            initialGuessNodes=self._initialNodes,
+            instruments=swaps,
+            instrumentsQuotes=swapsQuotes,
+            dayCounter=self._dayCounter,
+            curveInterpolator=LogLinearInterpolator,
+            discountCurve=discountCurve
+        ).solve()
+
+        self.assertTrue(convergenceStatus)
+
+        for discountFactorIndex, (expectedValue, testValue) in enumerate(
+                zip(forwardCurve._values, curve._values)
+        ):
+            with self.subTest(f"discountFactorIndex: {discountFactorIndex}"):
+                self.assertAlmostEqual(
+                    expectedValue,
+                    testValue.realPart
                 )

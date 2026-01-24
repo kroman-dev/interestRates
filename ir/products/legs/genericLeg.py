@@ -88,24 +88,21 @@ class GenericLeg(ABC):
         self._forwardCurve = curve
 
     @abstractmethod
-    def _getCashFlows(
+    def getCashFlows(
             self,
             discountCurve: Optional[GenericCurve] = None,
             forwardCurve: Optional[GenericCurve] = None
     ) -> FloatVectorType:
         pass
 
-    def getCashFlows(
+    def npv(
             self,
-            curve: Optional[GenericCurve] = None
-    ) -> FloatVectorType:
-        discountCurve = curve
-        if self.getDiscountCurve() is not None:
-            discountCurve = self._discountCurve
-        return self._getCashFlows(
-            discountCurve=discountCurve,
-            forwardCurve=curve
+            discountCurve: Optional[GenericCurve] = None,
+            forwardCurve: Optional[GenericCurve] = None
+    ) -> float:
+        return np.sum(
+            self.getCashFlows(
+                discountCurve=discountCurve,
+                forwardCurve=forwardCurve
+            )
         )
-
-    def npv(self, curve: Optional[GenericCurve] = None) -> float:
-        return np.sum(self.getCashFlows(curve))

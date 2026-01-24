@@ -6,7 +6,7 @@ import numpy as np
 
 from ir.curve.discountCurve import DiscountCurve
 from ir.dayCounter.thirty360BondBasis import Thirty360BondBasis
-from ir.legs.fixedLeg import FixedLeg
+from ir.products.legs.fixedLeg import FixedLeg
 from ir.scheduler.schedule.genericSchedule import GenericSchedule
 from ir.scheduler.schedule.scheduleData import ScheduleData
 
@@ -53,7 +53,7 @@ class FixedLegTest(TestCase):
         with self.subTest("with input curve"):
             np.testing.assert_array_almost_equal(
                 expectedAnswer,
-                self._sampleLeg1.getCashFlows(curve=self._discountCurve)
+                self._sampleLeg1.getCashFlows(self._discountCurve)
             )
 
         with self.subTest("with internal curve"):

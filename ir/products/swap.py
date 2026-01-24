@@ -3,7 +3,7 @@ from typing import Optional
 import numpy as np
 
 from ir.curve.genericCurve import GenericCurve
-from ir.legs.genericLeg import GenericLeg
+from ir.products.legs.genericLeg import GenericLeg
 from ir.products.bootstrapInstrument import BootstrapInstrument
 
 
@@ -19,18 +19,32 @@ class Swap(BootstrapInstrument):
         effectiveDate = self._receiveLeg._schedule._effectiveDate
         return f"{effectiveDate}_{frequency}_{terminationDate}"
 
-    def npv(self, curve: Optional[GenericCurve] = None) -> float:
-        return self._receiveLeg.npv(curve) - self._payLeg.npv(curve)
+    def npv(
+            self,
+            discountCurve: Optional[GenericCurve] = None,
+            forwardCurve: Optional[GenericCurve] = None
+    ) -> float:
+        return self._receiveLeg.npv(
+            discountCurve=discountCurve,
+            forwardCurve=forwardCurve
+        ) - self._payLeg.npv(
+            discountCurve=discountCurve,
+            forwardCurve=forwardCurve
+        )
 
-    def getParRate(self, curve: Optional[GenericCurve] = None) -> float:
+    def getParRate(
+            self,
+            discountCurve: Optional[GenericCurve] = None,
+            forwardCurve: Optional[GenericCurve] = None
+    ) -> float:
         """
         The forward swap rate that RFS(fixRate) = 0
             Brigo ex. (1.25) p.15
         """
-        discountCurve = curve if self._receiveLeg.getDiscountCurve() is None \
-            else self._receiveLeg.getDiscountCurve()
-
-        return self._receiveLeg.npv(curve) / np.sum(
+        return self._receiveLeg.npv(
+            discountCurve=discountCurve,
+            forwardCurve=forwardCurve
+        ) / np.sum(
             self._payLeg.getDiscountFactors(discountCurve)
             * self._payLeg.getAccruals()
         ) / self._payLeg.getNotional()

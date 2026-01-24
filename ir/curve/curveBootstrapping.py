@@ -1,10 +1,11 @@
 from datetime import date
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from numpy.typing import NDArray
 
 import numpy as np
 
 from ir.curve.discountCurve import DiscountCurve
+from ir.curve.genericCurve import GenericCurve
 from ir.curve.interpolator.genericInterpolator import GenericInterpolator
 from ir.curve.interpolator.logLinearInterpolator import LogLinearInterpolator
 from ir.dayCounter.genericDayCounter import GenericDayCounter
@@ -20,7 +21,8 @@ class CurveBootstrapping:
             instruments: List[BootstrapInstrument],
             instrumentsQuotes: List[float],
             dayCounter: GenericDayCounter,
-            curveInterpolator: GenericInterpolator = LogLinearInterpolator
+            curveInterpolator: GenericInterpolator = LogLinearInterpolator,
+            discountCurve: Optional[GenericCurve] = None
     ):
         """
             Note. In [1] discount factor are denoted as v_i, so in dual part
@@ -48,6 +50,8 @@ class CurveBootstrapping:
         self._regularizationParameter = 1000
         self._solverMethodName = "GaussNewton"
 
+        self._discountCurve = discountCurve
+
         self._nodePointLength = len(list(self._initialGuessNodes.keys())) - 1
         if self._nodePointLength == len(instruments):
             self._bootstrappingStatus = 'completely specified curve'
@@ -74,8 +78,14 @@ class CurveBootstrapping:
         )
 
     def _calculateMetrics(self, curve: DiscountCurve):
+        discountCurve = curve if self._discountCurve is None \
+            else self._discountCurve
+
         parRatesFromCurve = np.array([
-            instrument.getParRate(curve) for instrument in self._instruments
+            instrument.getParRate(
+                discountCurve=discountCurve,
+                forwardCurve=curve
+            ) for instrument in self._instruments
         ]).transpose()
 
         difference = parRatesFromCurve - self._instrumentsQuotes
