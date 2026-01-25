@@ -1,7 +1,9 @@
 from ir.curve.curveBootstrapping import CurveBootstrapping
 from ir.curve.discountCurve import DiscountCurve
 from ir.curve.interpolator.logLinearInterpolator import LogLinearInterpolator
+
 from ir.products.deposit import Deposit
+from ir.products.forwardRateAgreement import ForwardRateAgreement
 from ir.products.interestRateSwap import InterestRateSwap
 from ir.scheduler.businessDayConvention.following import Following
 from ir.scheduler.businessDayConvention.modifiedFollowing \
@@ -18,6 +20,7 @@ __all__ = [
     "CurveBootstrapping",
     "InterestRateSwap",
     "Deposit",
+    "ForwardRateAgreement",
     "Following",
     "ModifiedFollowing",
     "Period",
