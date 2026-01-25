@@ -1,6 +1,6 @@
 from datetime import date
 
-from ir.curve.curveBootstrapping import CurveBootstrapping
+from ir.curve.bootstrappingSolver import BootstrappingSolver
 from ir.curve.discountCurve import DiscountCurve
 from ir.curve.interpolator.logLinearInterpolator import LogLinearInterpolator
 from ir.dayCounter.act360 import Act360
@@ -129,7 +129,7 @@ if __name__ == '__main__':
         for fixRate, endDate in zip(swapQuotes, dates[4:])
     ]
 
-    curve, convergenceStatus = CurveBootstrapping(
+    curve, convergenceStatus = BootstrappingSolver(
         initialGuessNodes=initialNodes,
         instruments=swaps,
         dayCounter=dayCounter,

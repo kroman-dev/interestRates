@@ -1,4 +1,4 @@
-from ir.curve.curveBootstrapping import CurveBootstrapping
+from ir.curve.bootstrappingSolver import BootstrappingSolver
 from ir.curve.discountCurve import DiscountCurve
 from ir.curve.interpolator.logLinearInterpolator import LogLinearInterpolator
 
@@ -17,7 +17,7 @@ from ir.dayCounter.thirty360BondBasis import Thirty360BondBasis
 
 
 __all__ = [
-    "CurveBootstrapping",
+    "BootstrappingSolver",
     "InterestRateSwap",
     "Deposit",
     "ForwardRateAgreement",

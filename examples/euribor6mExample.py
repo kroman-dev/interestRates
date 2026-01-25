@@ -1,6 +1,9 @@
 import os
 import datetime
+
+import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from ir import *
 from examples.eoniaExample import bootstrapEonia
@@ -67,7 +70,7 @@ if __name__ == '__main__':
         )
     ]
 
-    curve, convergenceStatus = CurveBootstrapping(
+    curve, convergenceStatus = BootstrappingSolver(
         initialGuessNodes={_date: 1 for _date in dates},
         instruments=instruments,
         instrumentsQuotes=euriborDataframe["Rate"],
@@ -76,3 +79,16 @@ if __name__ == '__main__':
     ).solve()
 
     print(curve)
+
+    curve.setEnableExtrapolation(True)
+    datesForPlot = np.arange(dates[0], dates[-1]).tolist()
+
+    forwardRates = [
+        curve.getForwardRate(
+            periodStart=startDate,
+            periodEnd=startDate+Period(euribor6m.getTenor())
+        ).realPart
+        for startDate in datesForPlot
+    ]
+    plt.plot(datesForPlot,forwardRates)
+    plt.show()

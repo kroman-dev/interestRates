@@ -111,7 +111,7 @@ def bootstrapEonia():
         )
     ]
 
-    curve, convergenceStatus = CurveBootstrapping(
+    curve, convergenceStatus = BootstrappingSolver(
         initialGuessNodes={_date: 1 for _date in dates},
         instruments=instruments,
         instrumentsQuotes=eoniaDataframe["Rate"].tolist(),

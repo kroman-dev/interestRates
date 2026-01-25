@@ -13,7 +13,7 @@ from ir.dualNumbers.dualNumber import DualNumber
 from ir.products.bootstrapInstrument import BootstrapInstrument
 
 
-class CurveBootstrapping:
+class BootstrappingSolver:
 
     def __init__(
             self,

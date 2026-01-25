@@ -1,7 +1,7 @@
 from datetime import date
 from unittest import TestCase
 
-from ir.curve.curveBootstrapping import CurveBootstrapping
+from ir.curve.bootstrappingSolver import BootstrappingSolver
 from ir.curve.discountCurve import DiscountCurve
 from ir.curve.interpolator.logLinearInterpolator import LogLinearInterpolator
 from ir.dayCounter.act365Fixed import Act365Fixed
@@ -73,7 +73,7 @@ class CurveBootstrappingTest(TestCase):
         ]
 
     def testSolve1(self):
-        curve, convergenceStatus = CurveBootstrapping(
+        curve, convergenceStatus = BootstrappingSolver(
             initialGuessNodes=self._initialNodes,
             instruments=self._swaps,
             instrumentsQuotes=self._swapQuotes,
@@ -91,7 +91,7 @@ class CurveBootstrappingTest(TestCase):
                 )
 
     def testSolve2(self):
-        curve, convergenceStatus = CurveBootstrapping(
+        curve, convergenceStatus = BootstrappingSolver(
             initialGuessNodes=self._initialNodes,
             instruments=self._swaps2,
             instrumentsQuotes=self._swapQuotes,
@@ -109,7 +109,7 @@ class CurveBootstrappingTest(TestCase):
                 )
 
     def testSolveMultiCurve1(self):
-        curve, convergenceStatus = CurveBootstrapping(
+        curve, convergenceStatus = BootstrappingSolver(
             initialGuessNodes=self._initialNodes,
             instruments=self._swaps,
             instrumentsQuotes=self._swapQuotes,
@@ -174,7 +174,7 @@ class CurveBootstrappingTest(TestCase):
         ]
         swapsQuotes = [swap.getParRate() for swap in swaps]
 
-        curve, convergenceStatus = CurveBootstrapping(
+        curve, convergenceStatus = BootstrappingSolver(
             initialGuessNodes=self._initialNodes,
             instruments=swaps,
             instrumentsQuotes=swapsQuotes,
