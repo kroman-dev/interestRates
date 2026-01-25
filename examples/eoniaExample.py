@@ -5,7 +5,7 @@ import pandas as pd
 from ir import *
 
 
-if __name__ == '__main__':
+def bootstrapEonia():
     mainDir = os.path.dirname(os.path.abspath(""))
     eoniaDataframe = pd.read_csv(
         os.path.abspath(os.path.join(mainDir, "data/eonia11122012.csv")),
@@ -29,17 +29,9 @@ if __name__ == '__main__':
     dayCounter = Act360()
     dates = [todayDate] + eoniaDataframe["EndDate"].tolist()
 
-    initialNodes = {_date: 1 for _date in dates}
-    initialCurve = DiscountCurve(
-        dates=list(initialNodes.keys()),
-        discountFactors=list(initialNodes.values()),
-        dayCounter=Act360()
-    )
-
     # deposits
     instruments = [
         Deposit(
-            curve=initialCurve,
             fixedRate=rate,
             effectiveDate=effectiveDate,
             tenor='1D',
@@ -60,7 +52,6 @@ if __name__ == '__main__':
     # from 1W to 1M OIS
     instruments += [
         InterestRateSwap(
-            discountCurve=initialCurve,
             fixedRate=rate,
             effectiveDate=spotDate,
             terminationDate=terminationDate,
@@ -81,7 +72,6 @@ if __name__ == '__main__':
 
     instruments += [
         ForwardRateAgreement(
-            discountCurve=initialCurve,
             fixedRate=rate,
             effectiveDate=startDate,
             terminationDate=endDate,
@@ -102,7 +92,6 @@ if __name__ == '__main__':
 
     instruments += [
         InterestRateSwap(
-            discountCurve=initialCurve,
             fixedRate=rate,
             effectiveDate=startDate,
             terminationDate=endDate,
@@ -123,11 +112,16 @@ if __name__ == '__main__':
     ]
 
     curve, convergenceStatus = CurveBootstrapping(
-        initialGuessNodes=initialNodes,
+        initialGuessNodes={_date: 1 for _date in dates},
         instruments=instruments,
         instrumentsQuotes=eoniaDataframe["Rate"].tolist(),
         dayCounter=dayCounter,
         curveInterpolator=LogLinearInterpolator
     ).solve()
+    return curve
+
+
+if __name__ == '__main__':
+    curve = bootstrapEonia()
 
     print(curve)
