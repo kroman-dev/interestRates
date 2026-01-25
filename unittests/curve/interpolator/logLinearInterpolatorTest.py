@@ -45,6 +45,15 @@ class LogLinearInterpolatorTest(TestCase):
                 "y2": 1000.0,
                 "x": 2.0,
                 "expected": 100.0
+            },
+            {
+                "name": "extrapolate",
+                "x1": 1.0,
+                "x2": 3.0,
+                "y1": 10.0,
+                "y2": 1000.0,
+                "x": 4.0,
+                "expected": 10000.0
             }
         ]
 

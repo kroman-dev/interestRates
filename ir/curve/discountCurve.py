@@ -17,13 +17,15 @@ class DiscountCurve(GenericCurve):
             dates: List[date],
             discountFactors: Union[List[DualNumber], FloatVectorType],
             dayCounter: GenericDayCounter,
-            interpolator: GenericInterpolator = LogLinearInterpolator
+            interpolator: GenericInterpolator = LogLinearInterpolator,
+            enableExtrapolation: bool = False
     ):
         super().__init__(
             dates=dates,
             values=discountFactors,
             dayCounter=dayCounter,
-            interpolator=interpolator
+            interpolator=interpolator,
+            enableExtrapolation=enableExtrapolation
         )
         if isinstance(discountFactors[0], DualNumber):
             if (1. - discountFactors[0].realPart) > 1e-15:
@@ -37,7 +39,8 @@ class DiscountCurve(GenericCurve):
             dates=self._dates,
             discountFactors=[value.realPart for value in self._values],
             dayCounter=self._dayCounter,
-            interpolator=self._interpolator
+            interpolator=self._interpolator,
+            enableExtrapolation=self._enableExtrapolation
         )
 
     def _interpolate(self, x: date) -> FloatOrVectorType:
@@ -48,7 +51,21 @@ class DiscountCurve(GenericCurve):
         if x < self._curveDate:
             raise ValueError('x before curveDate')
         if x > self._dates[-1]:
-            raise ValueError('x in extrapolation domain')
+            if not self._enableExtrapolation:
+                raise ValueError('x in extrapolation domain')
+            # noinspection PyCallingNonCallable
+            return self._interpolator(
+                x1=self._dayCounter.yearFraction(
+                    startDate=self._curveDate,
+                    endDate=self._dates[-2]
+                ),
+                x2=self._dayCounter.yearFraction(
+                    startDate=self._curveDate,
+                    endDate=self._dates[-1]
+                ),
+                y1=self._values[-2],
+                y2=self._values[-1]
+            )(yearFraction)
 
         for intervalIndex, (startDate, endDate) in enumerate(
                 zip(self._dates[:-1], self._dates[1:])

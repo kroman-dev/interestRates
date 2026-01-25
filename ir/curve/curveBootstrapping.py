@@ -139,12 +139,39 @@ class CurveBootstrapping:
             - 0.5 * gradientObjective
         )
 
+    @staticmethod
+    def _treatSickCurve(curve: GenericCurve) -> GenericCurve:
+        discountFactors = curve._values
+        isTreated = False
+        for index, discountFactor in enumerate(discountFactors):
+            if (
+                    isinstance(discountFactor, DualNumber)
+                    and discountFactor.realPart <= 0
+            ):
+                discountFactors[index] = DualNumber(
+                    1e-5,
+                    discountFactor.dualPart
+                )
+                isTreated = True
+
+        if isTreated:
+            return DiscountCurve(
+                dates=curve._dates,
+                discountFactors=discountFactors,
+                dayCounter=curve._dayCounter,
+                interpolator=curve._interpolator,
+                enableExtrapolation=curve._enableExtrapolation
+            )
+        return curve
+
     def _updateStep(
             self,
             curve: DiscountCurve,
             previousObjectiveValue: float
     ) -> Tuple[DualNumber, NDArray[DualNumber]]:
+        curve = self._treatSickCurve(curve)
         currentDiscountFactors = np.array(curve._values[1:]).transpose()
+
         objectiveValue, gradientObjective, jacobian = \
             self._calculateMetrics(curve)
 

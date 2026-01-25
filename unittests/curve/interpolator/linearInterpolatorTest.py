@@ -44,6 +44,15 @@ class LinearInterpolatorTest(TestCase):
                 "y2": 10.0,
                 "x": 3.0,
                 "expected": 6.0
+            },
+            {
+                "name": "extrapolate",
+                "x1": 0.0,
+                "x2": 1.0,
+                "y1": 0.0,
+                "y2": 1.0,
+                "x": 2.0,
+                "expected": 2.0
             }
         ]
 

@@ -16,7 +16,8 @@ class GenericCurve(ABC):
             dates: List[date],
             values: FloatVectorType,
             dayCounter: GenericDayCounter,
-            interpolator: GenericInterpolator
+            interpolator: GenericInterpolator,
+            enableExtrapolation: bool = False
     ):
         if len(dates) != len(values):
             raise ValueError('different length between dates and values')
@@ -24,6 +25,10 @@ class GenericCurve(ABC):
         self._values = values
         self._dayCounter = dayCounter
         self._interpolator = interpolator
+        self._enableExtrapolation = enableExtrapolation
+
+    def setEnableExtrapolation(self, enableExtrapolation: bool):
+        self._enableExtrapolation = enableExtrapolation
 
     @abstractmethod
     def _interpolate(self, x: date) -> FloatOrVectorType:

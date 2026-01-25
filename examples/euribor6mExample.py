@@ -8,9 +8,11 @@ from ir.index.euribor6m import Euribor6M
 from ir.products.indexForwardRateAgreement import IndexForwardRateAgreement
 from ir.products.indexInterestRateSwap import IndexInterestRateSwap
 
+
 if __name__ == '__main__':
-    discountCurve = bootstrapEonia()
     euribor6m = Euribor6M()
+    discountCurve = bootstrapEonia()
+    discountCurve.setEnableExtrapolation(True)
 
     mainDir = os.path.dirname(os.path.abspath(""))
     euriborDataframe = pd.read_csv(
@@ -30,8 +32,7 @@ if __name__ == '__main__':
     todayDate = datetime.date(2012, 12, 11)
     spotDate = todayDate + Period('2D')
     fraEndIndex = 19
-    endIndex = 32
-    dates = [spotDate] + euriborDataframe["EndDate"].tolist()[:endIndex]
+    dates = [spotDate] + euriborDataframe["EndDate"].tolist()[:]
 
     stubPeriod = ShortBack()
 
@@ -60,16 +61,16 @@ if __name__ == '__main__':
             dayCounter=Thirty360BondBasis()
         )
         for startDate, endDate, rate in zip(
-            euriborDataframe["StartDate"][fraEndIndex:endIndex],
-            euriborDataframe["EndDate"][fraEndIndex:endIndex],
-            euriborDataframe["Rate"][fraEndIndex:endIndex]
+            euriborDataframe["StartDate"][fraEndIndex:],
+            euriborDataframe["EndDate"][fraEndIndex:],
+            euriborDataframe["Rate"][fraEndIndex:]
         )
     ]
 
     curve, convergenceStatus = CurveBootstrapping(
         initialGuessNodes={_date: 1 for _date in dates},
         instruments=instruments,
-        instrumentsQuotes=euriborDataframe["Rate"][:endIndex],
+        instrumentsQuotes=euriborDataframe["Rate"],
         dayCounter=euribor6m.getDayCounter(),
         discountCurve=discountCurve.convertToFloatValues()
     ).solve()
