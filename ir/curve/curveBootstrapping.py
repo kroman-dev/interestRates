@@ -29,6 +29,16 @@ class CurveBootstrapping:
             I use keys v{index}
             [1] Darbyshire, Pricing and trading interest rate derivatives
         """
+        if discountCurve is not None \
+            and isinstance(
+            discountCurve.getDiscountFactor(list(initialGuessNodes.keys())[0]),
+            DualNumber
+        ):
+            raise ValueError(
+                'Incorrect behavior for discountCurve with DualNumbers. '
+                'Use discountCurve.convertToFloatValues()'
+            )
+
         self._instruments = instruments
         self._initialGuessNodes = initialGuessNodes
         self._curveInterpolator = curveInterpolator

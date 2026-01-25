@@ -6,6 +6,7 @@ from ir import *
 from examples.eoniaExample import bootstrapEonia
 from ir.index.euribor6m import Euribor6M
 from ir.products.indexForwardRateAgreement import IndexForwardRateAgreement
+from ir.products.indexInterestRateSwap import IndexInterestRateSwap
 
 if __name__ == '__main__':
     discountCurve = bootstrapEonia()
@@ -28,8 +29,9 @@ if __name__ == '__main__':
 
     todayDate = datetime.date(2012, 12, 11)
     spotDate = todayDate + Period('2D')
-    dates = [spotDate] + [euriborDataframe["StartDate"].tolist()[0]] \
-            + euriborDataframe["EndDate"].tolist()
+    fraEndIndex = 19
+    endIndex = 32
+    dates = [spotDate] + euriborDataframe["EndDate"].tolist()[:endIndex]
 
     stubPeriod = ShortBack()
 
@@ -42,22 +44,34 @@ if __name__ == '__main__':
             stubPeriod=stubPeriod
         )
         for startDate, endDate, rate in zip(
-            euriborDataframe["StartDate"][:10],
-            euriborDataframe["EndDate"][:10],
-            euriborDataframe["Rate"][:10]
+            euriborDataframe["StartDate"][:fraEndIndex],
+            euriborDataframe["EndDate"][:fraEndIndex],
+            euriborDataframe["Rate"][:fraEndIndex]
+        )
+    ]
+    instruments += [
+        IndexInterestRateSwap(
+            index=euribor6m,
+            fixedRate=rate,
+            effectiveDate=startDate,
+            terminationDate=endDate,
+            fixFrequency='1Y',
+            stubPeriod=stubPeriod,
+            dayCounter=Thirty360BondBasis()
+        )
+        for startDate, endDate, rate in zip(
+            euriborDataframe["StartDate"][fraEndIndex:endIndex],
+            euriborDataframe["EndDate"][fraEndIndex:endIndex],
+            euriborDataframe["Rate"][fraEndIndex:endIndex]
         )
     ]
 
-    initialNodes = {_date: 1 for _date in dates}
-    initialCurve = DiscountCurve(
-        dates=list(initialNodes.keys()),
-        discountFactors=list(initialNodes.values()),
-        dayCounter=euribor6m.getDayCounter()
-    )
     curve, convergenceStatus = CurveBootstrapping(
-        initialGuessNodes=initialNodes,
+        initialGuessNodes={_date: 1 for _date in dates},
         instruments=instruments,
-        instrumentsQuotes=euriborDataframe["Rate"][:10],
-        dayCounter=dayCounter,
-        curveInterpolator=LogLinearInterpolator
+        instrumentsQuotes=euriborDataframe["Rate"][:endIndex],
+        dayCounter=euribor6m.getDayCounter(),
+        discountCurve=discountCurve.convertToFloatValues()
     ).solve()
+
+    print(curve)

@@ -115,8 +115,7 @@ def bootstrapEonia():
         initialGuessNodes={_date: 1 for _date in dates},
         instruments=instruments,
         instrumentsQuotes=eoniaDataframe["Rate"].tolist(),
-        dayCounter=dayCounter,
-        curveInterpolator=LogLinearInterpolator
+        dayCounter=dayCounter
     ).solve()
     return curve
 

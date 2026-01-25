@@ -32,6 +32,14 @@ class DiscountCurve(GenericCurve):
             raise Exception('First value must be 1.')
         self._curveDate = dates[0]
 
+    def convertToFloatValues(self):
+        return DiscountCurve(
+            dates=self._dates,
+            discountFactors=[value.realPart for value in self._values],
+            dayCounter=self._dayCounter,
+            interpolator=self._interpolator
+        )
+
     def _interpolate(self, x: date) -> FloatOrVectorType:
         yearFraction = self._dayCounter.yearFraction(
             startDate=self._curveDate,
