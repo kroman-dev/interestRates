@@ -20,7 +20,7 @@ class IndexInterestRateSwap(InterestRateSwap):
             terminationDate: date,
             fixFrequency: str,
             stubPeriod: GenericStubPeriod,
-            dayCounter: Optional[GenericDayCounter] = None,
+            dayCounter: GenericDayCounter,
             discountCurve: Optional[GenericCurve] = None,
             forwardCurve: Optional[GenericCurve] = None,
             notional: float = 1,
@@ -34,8 +34,7 @@ class IndexInterestRateSwap(InterestRateSwap):
             floatFrequency=index.getTenor(),
             endOfMonth=index.getEndOfMonth(),
             businessDayConvention=index.getBusinessDayConvention(),
-            dayCounter=\
-                index.getDayCounter() if dayCounter is None else dayCounter,
+            dayCounter=dayCounter,
             stubPeriod=stubPeriod,
             calendar=index.getCalendar(),
             discountCurve=discountCurve,
