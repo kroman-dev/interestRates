@@ -67,6 +67,9 @@ class Deposit(BootstrapInstrument):
             discountCurve: Optional[GenericCurve] = None,
             forwardCurve: Optional[GenericCurve] = None
     ) -> float:
+        # Deposit is not a collateralized contract, so we prefer forwardCurve
+        if forwardCurve is not None:
+            discountCurve = forwardCurve
         scheduleData = self._fixedLeg.getSchedule().getSchedule()
         if len(scheduleData.accrualStartDates) > 1:
             raise ValueError('Incorrect schedule')

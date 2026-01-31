@@ -1,3 +1,4 @@
+import warnings
 from datetime import date
 from typing import List, Dict, Tuple, Optional
 from numpy.typing import NDArray
@@ -87,7 +88,7 @@ class BootstrappingSolver:
             interpolator=self._curveInterpolator
         )
 
-    def _calculateMetrics(self, curve: DiscountCurve):
+    def _calculateMetrics(self, curve: GenericCurve):
         discountCurve = curve if self._discountCurve is None \
             else self._discountCurve
 
@@ -153,6 +154,7 @@ class BootstrappingSolver:
                     discountFactor.dualPart
                 )
                 isTreated = True
+                warnings.warn("treat curve")
 
         if isTreated:
             return DiscountCurve(
@@ -166,7 +168,7 @@ class BootstrappingSolver:
 
     def _updateStep(
             self,
-            curve: DiscountCurve,
+            curve: GenericCurve,
             previousObjectiveValue: float
     ) -> Tuple[DualNumber, NDArray[DualNumber]]:
         curve = self._treatSickCurve(curve)
@@ -192,7 +194,7 @@ class BootstrappingSolver:
         else:
             raise ValueError("unknown solver method")
 
-    def solve(self) -> Tuple[DiscountCurve, bool]:
+    def solve(self) -> Tuple[GenericCurve, bool]:
         maxIterations = 2000
         tolerance = 1e-16
         previousObjectiveValue = 1e10

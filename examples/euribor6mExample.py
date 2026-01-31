@@ -6,17 +6,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from ir import *
-from examples.eoniaExample import bootstrapEonia
 from ir.index.euribor6m import Euribor6M
 from ir.products.indexForwardRateAgreement import IndexForwardRateAgreement
 from ir.products.indexInterestRateSwap import IndexInterestRateSwap
+from examples.eoniaExample import bootstrapEonia
 
 
-if __name__ == '__main__':
-    euribor6m = Euribor6M()
-    discountCurve = bootstrapEonia()
-    discountCurve.setEnableExtrapolation(True)
-
+def getEuribor6mDataframe() -> pd.DataFrame:
     mainDir = os.path.dirname(os.path.abspath(""))
     euriborDataframe = pd.read_csv(
         os.path.abspath(os.path.join(mainDir, "data/euribor6m11122012.csv")),
@@ -31,6 +27,14 @@ if __name__ == '__main__':
     euriborDataframe['Rate'] = euriborDataframe['Rate, %'] / 100
     # delete synthetic instruments
     euriborDataframe = euriborDataframe.iloc[9:].reset_index(drop=True)
+    return euriborDataframe
+
+
+if __name__ == '__main__':
+    euribor6m = Euribor6M()
+    discountCurve = bootstrapEonia()
+    discountCurve.setEnableExtrapolation(True)
+    euriborDataframe = getEuribor6mDataframe()
 
     todayDate = datetime.date(2012, 12, 11)
     spotDate = todayDate + Period('2D')

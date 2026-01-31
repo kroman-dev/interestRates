@@ -39,15 +39,13 @@ class GenericCurve(ABC):
         pass
 
     def getForwardRate(self, periodStart: date, periodEnd: date) -> float:
-        accrual = self._dayCounter.yearFraction(
-            startDate=periodStart,
-            endDate=periodEnd
-        )
-
         return (
                 self.getDiscountFactor(periodStart)
                 / self.getDiscountFactor(periodEnd) - 1
-        ) / accrual
+        ) / self._dayCounter.yearFraction(
+            startDate=periodStart,
+            endDate=periodEnd
+        )
 
     def setInterpolator(self, newInterpolator: GenericInterpolator):
         self._interpolator = newInterpolator
