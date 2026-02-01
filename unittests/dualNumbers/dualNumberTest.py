@@ -13,9 +13,9 @@ class DualNumberTest(TestCase):
         )
 
     def testNeg(self):
-        neg = -self._dualNumber
-        self.assertEqual(-3., neg._realPart)
-        self.assertEqual({'x': -2., 'y': 1.5}, neg._dualPart)
+        negativeDualNumber = -self._dualNumber
+        self.assertEqual(-3., negativeDualNumber._realPart)
+        self.assertEqual({'x': -2., 'y': 1.5}, negativeDualNumber._dualPart)
 
     def testEq(self):
         with self.subTest("True case"):

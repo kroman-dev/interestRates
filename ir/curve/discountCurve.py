@@ -35,9 +35,22 @@ class DiscountCurve(GenericCurve):
         self._curveDate = dates[0]
 
     def convertToFloatValues(self):
+        # TODO bad naming, i mean that output of this method list with floats
         return DiscountCurve(
             dates=self._dates,
             discountFactors=[value.realPart for value in self._values],
+            dayCounter=self._dayCounter,
+            interpolator=self._interpolator,
+            enableExtrapolation=self._enableExtrapolation
+        )
+
+    def resetDualPart(self) -> GenericCurve:
+        return DiscountCurve(
+            dates=self._dates,
+            discountFactors=[
+                DualNumber(realPart=value.realPart, dualPart={f"v{index}": 1})
+                for index, value in enumerate(self._values)
+            ],
             dayCounter=self._dayCounter,
             interpolator=self._interpolator,
             enableExtrapolation=self._enableExtrapolation

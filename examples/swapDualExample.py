@@ -3,8 +3,8 @@ from datetime import date
 from ir.curve.discountCurve import DiscountCurve
 from ir.dayCounter.act365Fixed import Act365Fixed
 from ir.dualNumbers.dualNumber import DualNumber
-from ir.legs.fixedLeg import FixedLeg
-from ir.legs.floatingLeg import FloatingLeg
+from ir.products.legs.fixedLeg import FixedLeg
+from ir.products.legs.floatingLeg import FloatingLeg
 from ir.products.interestRateSwap import InterestRateSwap
 from ir.products.swap import Swap
 from ir.scheduler.businessDayConvention.noConvention import NoConvention
@@ -102,3 +102,5 @@ if __name__ == '__main__':
                 notional=notional
             ).npv()
         )
+
+

@@ -1,4 +1,5 @@
 import warnings
+
 from datetime import date
 from typing import List, Dict, Tuple, Optional
 from numpy.typing import NDArray
@@ -12,6 +13,7 @@ from ir.curve.interpolator.logLinearInterpolator import LogLinearInterpolator
 from ir.dayCounter.genericDayCounter import GenericDayCounter
 from ir.dualNumbers.dualNumber import DualNumber
 from ir.products.bootstrapInstrument import BootstrapInstrument
+from ir.projectTyping.floatVectorType import FloatVectorType
 
 
 class BootstrappingSolver:
@@ -36,7 +38,7 @@ class BootstrappingSolver:
             DualNumber
         ):
             raise ValueError(
-                'Incorrect behavior for discountCurve with DualNumbers. '
+                'Incorrect behavior for discountCurve with DualNumbers.'
                 'Use discountCurve.convertToFloatValues()'
             )
 
@@ -142,6 +144,9 @@ class BootstrappingSolver:
 
     @staticmethod
     def _treatSickCurve(curve: GenericCurve) -> GenericCurve:
+        """
+            treat negative discount factors
+        """
         discountFactors = curve._values
         isTreated = False
         for index, discountFactor in enumerate(discountFactors):
@@ -217,3 +222,37 @@ class BootstrappingSolver:
 
         self._regularizationParameter = 1000
         return solutionCurve, isSuccessConvergence
+
+    def _getJacobianOfCurveDiscountFactors(self) -> FloatVectorType:
+        # TODO name?
+        bumpSize = 1e-5
+        jacobian = np.zeros(
+            shape=(len(self._instruments), self._nodePointLength + 1)
+        )
+        originalCurve, status = self.solve()
+        for instrumentIndex in range(len(self._instruments)):
+            bumpedQuotes = self._instrumentsQuotes.squeeze().tolist().copy()
+            bumpedQuotes[instrumentIndex] += bumpSize
+
+            bumpedCurve, solverStatus = BootstrappingSolver(
+                initialGuessNodes=self._initialGuessNodes,
+                instruments=self._instruments,
+                instrumentsQuotes=bumpedQuotes,
+                dayCounter=self._curveDayCounter,
+                curveInterpolator=self._curveInterpolator,
+                discountCurve=self._discountCurve
+            ).solve()
+
+            # for local schemes jacobian will be diagonal (e.g. log-discounts)
+            # for non-local schemes such as splines will be non-diagonal
+            # TODO access to protected attrs
+            jacobian[instrumentIndex, :] = np.array([
+                discountFactor.realPart
+                for discountFactor in (
+                    (
+                        bumpedCurve._values - originalCurve._values
+                    ) / bumpSize
+                )
+            ])
+
+        return jacobian

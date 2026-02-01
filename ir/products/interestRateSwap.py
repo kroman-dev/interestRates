@@ -35,6 +35,8 @@ class InterestRateSwap(Swap):
             paymentLag: int = 0,
             floatLegDayCounter: Optional[GenericDayCounter] = None
     ):
+        if not isinstance(fixedRate, float):
+            raise ValueError(f"fixedRate must be float, got {fixedRate}")
         # TODO add roll day
         # TODO add leg2 params
         super().__init__(
