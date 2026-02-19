@@ -25,7 +25,7 @@ class Instrument(ABC):
     ) -> FloatVectorType:
         if not isinstance(discountCurve._values[-1], DualNumber):
             raise ValueError('Use DualNumber with discountCurve')
-        # TODO forwardCurve?
+        # TODO multicurve?
         dualNpv: DualNumber = \
             self.npv(discountCurve=discountCurve, forwardCurve=forwardCurve)
 
@@ -46,6 +46,7 @@ class Instrument(ABC):
                 }
             )
 
+        # TODO sth strange in scaling
         return numpy.matmul(
             discountCurve.getJacobian(),
             numpy.array(list(dualNpv.dualPart.values()))[None].transpose()
