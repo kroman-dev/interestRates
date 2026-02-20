@@ -1,33 +1,48 @@
+import warnings
+
 from datetime import date
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from numpy.typing import NDArray
 
 import numpy as np
 
 from ir.curve.discountCurve import DiscountCurve
+from ir.curve.genericCurve import GenericCurve
 from ir.curve.interpolator.genericInterpolator import GenericInterpolator
 from ir.curve.interpolator.logLinearInterpolator import LogLinearInterpolator
 from ir.dayCounter.genericDayCounter import GenericDayCounter
 from ir.dualNumbers.dualNumber import DualNumber
-from ir.products.interestRateSwap import InterestRateSwap
+from ir.products.bootstrapInstrument import BootstrapInstrument
+from ir.projectTyping.floatVectorType import FloatVectorType
 
 
-class CurveBootstrapping:
+class BootstrappingSolver:
 
     def __init__(
             self,
             initialGuessNodes: Dict[date, float],
-            swaps: List[InterestRateSwap],
+            instruments: List[BootstrapInstrument],
+            instrumentsQuotes: List[float],
             dayCounter: GenericDayCounter,
-            curveInterpolator: GenericInterpolator = LogLinearInterpolator
+            curveInterpolator: GenericInterpolator = LogLinearInterpolator,
+            discountCurve: Optional[GenericCurve] = None
     ):
         """
             Note. In [1] discount factor are denoted as v_i, so in dual part
             I use keys v{index}
             [1] Darbyshire, Pricing and trading interest rate derivatives
         """
-        self._swaps = swaps
-        self._swapsRates = [swap.getFixRate() for swap in swaps]
+        if discountCurve is not None \
+            and isinstance(
+            discountCurve.getDiscountFactor(list(initialGuessNodes.keys())[0]),
+            DualNumber
+        ):
+            raise ValueError(
+                'Incorrect behavior for discountCurve with DualNumbers.'
+                'Use discountCurve.convertToFloatValues()'
+            )
+
+        self._instruments = instruments
         self._initialGuessNodes = initialGuessNodes
         self._curveInterpolator = curveInterpolator
         self._curveDates = list(initialGuessNodes.keys())
@@ -42,20 +57,20 @@ class CurveBootstrapping:
             dayCounter=self._curveDayCounter,
             interpolator=self._curveInterpolator
         )
-        self._swapsParRates = np.array([
-            swap.getFixRate() for swap in self._swaps
-        ]).transpose()
+        self._instrumentsQuotes = np.array(instrumentsQuotes).transpose()
 
         self._bootstrappingStatus = 'unknown'
         self._regularizationParameter = 1000
         self._solverMethodName = "GaussNewton"
 
+        self._discountCurve = discountCurve
+
         self._nodePointLength = len(list(self._initialGuessNodes.keys())) - 1
-        if self._nodePointLength == len(swaps):
+        if self._nodePointLength == len(instruments):
             self._bootstrappingStatus = 'completely specified curve'
-        elif self._nodePointLength < len(swaps):
+        elif self._nodePointLength < len(instruments):
             self._bootstrappingStatus = 'overspecified curve'
-        elif self._nodePointLength > len(swaps):
+        elif self._nodePointLength > len(instruments):
             self._bootstrappingStatus = 'underspecified curve'
             self._solverMethodName = "LevenbergMarquardt"
         else:
@@ -75,12 +90,18 @@ class CurveBootstrapping:
             interpolator=self._curveInterpolator
         )
 
-    def _calculateMetrics(self, curve: DiscountCurve):
+    def _calculateMetrics(self, curve: GenericCurve):
+        discountCurve = curve if self._discountCurve is None \
+            else self._discountCurve
+
         parRatesFromCurve = np.array([
-            swap.getParRate(curve) for swap in self._swaps
+            instrument.getParRate(
+                discountCurve=discountCurve,
+                forwardCurve=curve
+            ) for instrument in self._instruments
         ]).transpose()
 
-        difference = parRatesFromCurve - self._swapsParRates
+        difference = parRatesFromCurve - self._instrumentsQuotes
 
         objectiveValue = np.matmul(difference.transpose(), difference)
         gradientObjective = np.array(
@@ -121,12 +142,43 @@ class CurveBootstrapping:
             - 0.5 * gradientObjective
         )
 
+    @staticmethod
+    def _treatSickCurve(curve: GenericCurve) -> GenericCurve:
+        """
+            treat negative discount factors
+        """
+        discountFactors = curve._values
+        isTreated = False
+        for index, discountFactor in enumerate(discountFactors):
+            if (
+                    isinstance(discountFactor, DualNumber)
+                    and discountFactor.realPart <= 0
+            ):
+                discountFactors[index] = DualNumber(
+                    1e-5,
+                    discountFactor.dualPart
+                )
+                isTreated = True
+                warnings.warn("treat curve")
+
+        if isTreated:
+            return DiscountCurve(
+                dates=curve._dates,
+                discountFactors=discountFactors,
+                dayCounter=curve._dayCounter,
+                interpolator=curve._interpolator,
+                enableExtrapolation=curve._enableExtrapolation
+            )
+        return curve
+
     def _updateStep(
             self,
-            curve: DiscountCurve,
+            curve: GenericCurve,
             previousObjectiveValue: float
     ) -> Tuple[DualNumber, NDArray[DualNumber]]:
+        curve = self._treatSickCurve(curve)
         currentDiscountFactors = np.array(curve._values[1:]).transpose()
+
         objectiveValue, gradientObjective, jacobian = \
             self._calculateMetrics(curve)
 
@@ -147,7 +199,7 @@ class CurveBootstrapping:
         else:
             raise ValueError("unknown solver method")
 
-    def solve(self) -> Tuple[DiscountCurve, bool]:
+    def solve(self) -> Tuple[GenericCurve, bool]:
         maxIterations = 2000
         tolerance = 1e-16
         previousObjectiveValue = 1e10
@@ -170,3 +222,37 @@ class CurveBootstrapping:
 
         self._regularizationParameter = 1000
         return solutionCurve, isSuccessConvergence
+
+    def _getJacobianOfCurveDiscountFactors(self) -> FloatVectorType:
+        # TODO name?
+        bumpSize = 1e-5
+        jacobian = np.zeros(
+            shape=(len(self._instruments), self._nodePointLength + 1)
+        )
+        originalCurve, status = self.solve()
+        for instrumentIndex in range(len(self._instruments)):
+            bumpedQuotes = self._instrumentsQuotes.squeeze().tolist().copy()
+            bumpedQuotes[instrumentIndex] += bumpSize
+
+            bumpedCurve, solverStatus = BootstrappingSolver(
+                initialGuessNodes=self._initialGuessNodes,
+                instruments=self._instruments,
+                instrumentsQuotes=bumpedQuotes,
+                dayCounter=self._curveDayCounter,
+                curveInterpolator=self._curveInterpolator,
+                discountCurve=self._discountCurve
+            ).solve()
+
+            # for local schemes jacobian will be diagonal (e.g. log-discounts)
+            # for non-local schemes such as splines will be non-diagonal
+            # TODO access to protected attrs
+            jacobian[instrumentIndex, :] = np.array([
+                discountFactor.realPart
+                for discountFactor in (
+                    (
+                        bumpedCurve._values - originalCurve._values
+                    ) / bumpSize
+                )
+            ])
+
+        return jacobian

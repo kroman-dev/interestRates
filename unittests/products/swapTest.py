@@ -3,8 +3,8 @@ from unittest import TestCase
 
 from ir.curve.discountCurve import DiscountCurve
 from ir.dayCounter.act365Fixed import Act365Fixed
-from ir.legs.fixedLeg import FixedLeg
-from ir.legs.floatingLeg import FloatingLeg
+from ir.products.legs.fixedLeg import FixedLeg
+from ir.products.legs.floatingLeg import FloatingLeg
 from ir.products.swap import Swap
 from ir.scheduler.businessDayConvention.noConvention import NoConvention
 from ir.scheduler.calendar.noCalendar import NoCalendar
@@ -56,26 +56,23 @@ class SwapTest(TestCase):
 
         fixedLeg1 = FixedLeg(
             fixedRate=fixedRatePar,
-            curve=self._curve,
+            discountCurve=self._curve,
             schedule=self._fixedSchedule,
-            businessDayConvention=self._businessDayConvention,
             dayCounter=self._dayCounter,
             notional=self._notional
         )
 
         fixedLeg2 = FixedLeg(
             fixedRate=1.15 / 100,
-            curve=self._curve,
+            discountCurve=self._curve,
             schedule=self._fixedSchedule,
-            businessDayConvention=self._businessDayConvention,
             dayCounter=self._dayCounter,
             notional=self._notional
         )
 
         floatingLeg = FloatingLeg(
-            curve=self._curve,
+            discountCurve=self._curve,
             schedule=self._floatingSchedule,
-            businessDayConvention=self._businessDayConvention,
             dayCounter=self._dayCounter,
             notional=self._notional
         )

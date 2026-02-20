@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import date
-from typing import List
+from typing import List, Optional
 
 from ir.curve.interpolator.genericInterpolator import GenericInterpolator
 from ir.dayCounter.genericDayCounter import GenericDayCounter
@@ -16,7 +16,9 @@ class GenericCurve(ABC):
             dates: List[date],
             values: FloatVectorType,
             dayCounter: GenericDayCounter,
-            interpolator: GenericInterpolator
+            interpolator: GenericInterpolator,
+            enableExtrapolation: bool = False,
+            jacobian: Optional[FloatVectorType] = None
     ):
         if len(dates) != len(values):
             raise ValueError('different length between dates and values')
@@ -24,6 +26,19 @@ class GenericCurve(ABC):
         self._values = values
         self._dayCounter = dayCounter
         self._interpolator = interpolator
+        self._enableExtrapolation = enableExtrapolation
+        self._jacobian = jacobian
+
+    def setJacobian(self, jacobian: FloatVectorType):
+        if jacobian.shape[1] != (len(self._values)):
+            raise ValueError('jacobian dimension conflict with curve')
+        self._jacobian = jacobian
+
+    def getJacobian(self) -> Optional[FloatVectorType]:
+        return self._jacobian
+
+    def setEnableExtrapolation(self, enableExtrapolation: bool):
+        self._enableExtrapolation = enableExtrapolation
 
     @abstractmethod
     def _interpolate(self, x: date) -> FloatOrVectorType:
@@ -34,15 +49,13 @@ class GenericCurve(ABC):
         pass
 
     def getForwardRate(self, periodStart: date, periodEnd: date) -> float:
-        accrual = self._dayCounter.yearFraction(
-            startDate=periodStart,
-            endDate=periodEnd
-        )
-
         return (
                 self.getDiscountFactor(periodStart)
                 / self.getDiscountFactor(periodEnd) - 1
-        ) / accrual
+        ) / self._dayCounter.yearFraction(
+            startDate=periodStart,
+            endDate=periodEnd
+        )
 
     def setInterpolator(self, newInterpolator: GenericInterpolator):
         self._interpolator = newInterpolator

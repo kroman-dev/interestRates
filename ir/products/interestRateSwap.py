@@ -1,10 +1,10 @@
 from datetime import date
 from typing import Optional
 
-from ir.legs.fixedLeg import FixedLeg
-from ir.legs.floatingLeg import FloatingLeg
+from ir.products.legs.fixedLeg import FixedLeg
+from ir.products.legs.floatingLeg import FloatingLeg
 from ir.products.swap import Swap
-from ir.curve.discountCurve import DiscountCurve
+from ir.curve.genericCurve import GenericCurve
 from ir.dayCounter.genericDayCounter import GenericDayCounter
 from ir.scheduler.calendar.genericCalendar import GenericCalendar
 from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
@@ -15,11 +15,10 @@ from ir.scheduler.stubPeriod.genericStubPeriod import GenericStubPeriod
 
 class InterestRateSwap(Swap):
     """
-        vanilla IRS
+        Vanilla IRS
     """
     def __init__(
             self,
-            curve: DiscountCurve,
             fixedRate: float,
             effectiveDate: date,
             terminationDate: date,
@@ -30,15 +29,18 @@ class InterestRateSwap(Swap):
             dayCounter: GenericDayCounter,
             stubPeriod: GenericStubPeriod,
             calendar: GenericCalendar,
+            discountCurve: Optional[GenericCurve] = None,
+            forwardCurve: Optional[GenericCurve] = None,
             notional: float = 1,
             paymentLag: int = 0,
             floatLegDayCounter: Optional[GenericDayCounter] = None
     ):
+        if not isinstance(fixedRate, float):
+            raise ValueError(f"fixedRate must be float, got {fixedRate}")
         # TODO add roll day
         # TODO add leg2 params
         super().__init__(
             receiveLeg=FloatingLeg(
-                curve=curve,
                 schedule=Schedule(
                     effectiveDate=effectiveDate,
                     terminationDate=terminationDate,
@@ -49,14 +51,14 @@ class InterestRateSwap(Swap):
                     calendar=calendar,
                     paymentLag=paymentLag
                 ),
-                businessDayConvention=businessDayConvention,
                 dayCounter=dayCounter if floatLegDayCounter is None
                     else floatLegDayCounter,
-                notional=notional
+                notional=notional,
+                discountCurve=discountCurve,
+                forwardCurve=forwardCurve
             ),
             payLeg=FixedLeg(
                 fixedRate=fixedRate,
-                curve=curve,
                 schedule=Schedule(
                     effectiveDate=effectiveDate,
                     terminationDate=terminationDate,
@@ -67,8 +69,9 @@ class InterestRateSwap(Swap):
                     calendar=calendar,
                     paymentLag=paymentLag
                 ),
-                businessDayConvention=businessDayConvention,
                 dayCounter=dayCounter,
-                notional=notional
+                notional=notional,
+                discountCurve=discountCurve,
+                forwardCurve=forwardCurve
             )
         )

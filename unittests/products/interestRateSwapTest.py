@@ -12,7 +12,7 @@ from ir.scheduler.stubPeriod.shortBack import ShortBack
 class SwapTest(TestCase):
 
     def setUp(self):
-        self._dayCounter = Act365Fixed
+        self._dayCounter = Act365Fixed()
         self._effectiveDate = date(2022, 2, 14)
         self._terminationDate = date(2022, 6, 14)
         self._businessDayConvention = NoConvention()
@@ -34,7 +34,7 @@ class SwapTest(TestCase):
         self.notional = 1e9
 
         self._swap1 = InterestRateSwap(
-            curve=self._curve,
+            discountCurve=self._curve,
             fixedRate=self._fixedRatePar,
             effectiveDate=self._effectiveDate,
             terminationDate=self._terminationDate,
@@ -49,7 +49,6 @@ class SwapTest(TestCase):
         )
 
         self._swap2 = InterestRateSwap(
-            curve=self._curve,
             fixedRate=fixedSomeRate,
             effectiveDate=self._effectiveDate,
             terminationDate=self._terminationDate,
@@ -71,12 +70,6 @@ class SwapTest(TestCase):
             date(2032, 1, 1)
         ]
 
-        self._initialGuessCurve = DiscountCurve(
-            dates=dates,
-            discountFactors=[1. for _ in dates],
-            dayCounter=self._dayCounter
-        )
-
         self._targetCurve = DiscountCurve(
             dates=dates,
             discountFactors=[
@@ -93,24 +86,31 @@ class SwapTest(TestCase):
             quote / 100 for quote in [1.210, 1.635, 1.885, 1.930]
         ]
 
-        createSwap = lambda fixedRate, terminationDate: InterestRateSwap(
-            curve=self._initialGuessCurve,
-            fixedRate=fixedRate,
-            effectiveDate=date(2022, 1, 1),
-            terminationDate=terminationDate,
-            fixFrequency='1Y',
-            floatFrequency='1Y',
-            endOfMonth=self._endOfMonth,
-            businessDayConvention=self._businessDayConvention,
-            dayCounter=self._dayCounter,
-            stubPeriod=self._stubPeriod,
-            calendar=self._calendar,
-            notional=1.
+        createSwap = lambda fixedRate, terminationDate, discountCurve = None:\
+            InterestRateSwap(
+                fixedRate=fixedRate,
+                effectiveDate=date(2022, 1, 1),
+                terminationDate=terminationDate,
+                fixFrequency='1Y',
+                floatFrequency='1Y',
+                endOfMonth=self._endOfMonth,
+                businessDayConvention=self._businessDayConvention,
+                dayCounter=self._dayCounter,
+                stubPeriod=self._stubPeriod,
+                calendar=self._calendar,
+                notional=1.,
+                discountCurve=discountCurve
         )
         self._swaps = [
             createSwap(fixRate, endDate)
             for fixRate, endDate in zip(self._fixedRates, dates[1:])
         ]
+
+        self._swaps2 = [
+            createSwap(fixRate, endDate, self._targetCurve)
+            for fixRate, endDate in zip(self._fixedRates, dates[1:])
+        ]
+
 
     def testParRate(self):
         with self.subTest("par rate from book"):
@@ -122,7 +122,9 @@ class SwapTest(TestCase):
         with self.subTest("get numerical par rate"):
             self.assertAlmostEqual(
                 self._fixedRatePar,
-                self._swap2.getParRate()
+                self._swap2.getParRate(
+                    self._curve
+                )
             )
 
         with self.subTest("get numerical par rate"):
@@ -139,25 +141,31 @@ class SwapTest(TestCase):
             )
 
         for swap in self._swaps:
-            with self.subTest(f"{swap.getFixRate()}"):
+            with self.subTest(f"{swap._payLeg.getFixedRate()}"):
                 self.assertAlmostEqual(
-                    swap.getFixRate(),
+                    swap._payLeg.getFixedRate(),
                     swap.getParRate(self._targetCurve)
                 )
 
 
+        for swap in self._swaps2:
+            with self.subTest(f"{swap._payLeg.getFixedRate()}"):
+                self.assertAlmostEqual(
+                    swap._payLeg.getFixedRate(),
+                    swap.getParRate(self._targetCurve)
+                )
 
     def testNpv(self):
         with self.subTest('internal'):
             self.assertAlmostEqual(
                 -44901.21378,
-                self._swap2.npv(),
+                self._swap2.npv(self._curve),
                 places=4
             )
 
         with self.subTest('external'):
             self.assertAlmostEqual(
-                -self.notional * self._swap2._payLeg.getFixRate() \
+                -self.notional * self._swap2._payLeg.getFixedRate() \
                 * self._swap2._payLeg._accrualYearFractions[0],
                 self._swap2.npv(
                     DiscountCurve(
@@ -174,8 +182,76 @@ class SwapTest(TestCase):
             )
 
         for swap in self._swaps:
-            with self.subTest(f"{swap.getFixRate()}"):
+            with self.subTest(f"{swap._payLeg.getFixedRate()}"):
                 self.assertAlmostEqual(
                     0.,
                     swap.npv(self._targetCurve)
                 )
+
+    def testMultiCurve(self):
+        forwardCurve = DiscountCurve(
+            dates=[date(2022, 1, 1), date(2022, 1, 21)],
+            discountFactors=[1., 0.9975],
+            dayCounter=self._dayCounter
+        )
+        accrual = 20 / 365
+        forward = (1 / 0.9975 - 1) / accrual
+        swapMultiCurve = InterestRateSwap(
+            fixedRate=self._fixedRatePar,
+            effectiveDate=date(2022, 1, 1),
+            terminationDate=date(2022, 1, 21),
+            fixFrequency='20D',
+            floatFrequency='20D',
+            endOfMonth=self._endOfMonth,
+            businessDayConvention=self._businessDayConvention,
+            dayCounter=self._dayCounter,
+            stubPeriod=self._stubPeriod,
+            calendar=self._calendar,
+            notional=1.,
+            discountCurve=self._curve,
+            forwardCurve=forwardCurve
+        )
+        with self.subTest('npv1'):
+            expectedValue = self._curve.getDiscountFactor(date(2022, 1, 21)) \
+                            * accrual * (forward - self._fixedRatePar)
+            self.assertAlmostEqual(
+                expectedValue,
+                swapMultiCurve.npv()
+            )
+
+        with self.subTest('npv2'):
+            expectedValue = forwardCurve.getDiscountFactor(date(2022, 1, 21)) \
+                            * accrual * (forward - self._fixedRatePar)
+            self.assertAlmostEqual(
+                expectedValue,
+                swapMultiCurve.npv(discountCurve=forwardCurve)
+            )
+
+        with self.subTest('getPartRate'):
+            with self.subTest('forwardCurve'):
+                self.assertAlmostEqual(
+                    forward,
+                    swapMultiCurve.getParRate(forwardCurve=forwardCurve)
+                )
+            with self.subTest('forwardCurve'):
+                self.assertAlmostEqual(
+                    forward,
+                    swapMultiCurve.getParRate()
+                )
+            with self.subTest('discountCurve'):
+                self.assertAlmostEqual(
+                    forward,
+                    swapMultiCurve.getParRate(discountCurve=self._curve)
+                )
+            with self.subTest('discountCurve and forwardCurve'):
+                self.assertAlmostEqual(
+                    forward,
+                    swapMultiCurve.getParRate(
+                        discountCurve=self._curve,
+                        forwardCurve=forwardCurve
+                    )
+                )
+
+
+
+
