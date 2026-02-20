@@ -2,7 +2,7 @@ from typing import Dict, Optional, Any
 from math import exp, log
 
 
-EPS = 1e-16
+_almostZeroValue = 1e-16
 
 
 class DualNumber:
@@ -71,11 +71,13 @@ class DualNumber:
             return True
 
         # float point
-        if abs(self.realPart - other.realPart) < EPS:
+        if abs(self.realPart - other.realPart) < _almostZeroValue:
             if (set(self.dualPart) == set(other.dualPart)) \
                     and (set(other.dualPart) == set(self.dualPart)):
                 for key in other.dualPart:
-                    if abs(other.dualPart[key] - self.dualPart[key]) > EPS:
+                    if abs(
+                            other.dualPart[key] - self.dualPart[key]
+                    ) > _almostZeroValue:
                         return False
                 return True
 

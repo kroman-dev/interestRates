@@ -154,7 +154,7 @@ class CurveBootstrappingTest(TestCase):
 
         createSwap = lambda fixedRate, terminationDate: \
             InterestRateSwap(
-                fixedRate=None,
+                fixedRate=0.,
                 effectiveDate=date(2022, 1, 1),
                 terminationDate=terminationDate,
                 fixFrequency='1Y',
