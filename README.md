@@ -22,6 +22,7 @@ numerical optimization problem.
 About Multiple Interest Rate Curve Bootstrapping but Were Afraid 
 to Ask (April 2013).
 
-2) Darbyshire, J.H.M., 2022. Pricing and Trading Interest Rate Derivatives 2022: A Practical Guide to Swaps. Aitch & Dee Limited.
+2) Darbyshire, J.H.M., 2022. Pricing and Trading Interest Rate 
+Derivatives 2022: A Practical Guide to Swaps. Aitch & Dee Limited.
 
 
