@@ -254,5 +254,5 @@ class BootstrappingSolver:
                     ) / bumpSize
                 )
             ])
-
-        return jacobian
+        # 1e-4 scaling to calculate pv01
+        return 1e-4 * jacobian
