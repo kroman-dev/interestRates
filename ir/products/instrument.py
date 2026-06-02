@@ -1,7 +1,7 @@
-import numpy
-
 from abc import ABC, abstractmethod
 from typing import Optional
+
+import numpy
 
 from ir.curve.genericCurve import GenericCurve
 from ir.dualNumbers.dualNumber import DualNumber

@@ -42,8 +42,8 @@ if __name__ == '__main__':
     )
     curve, status = sampleBootstrappingSolver.solve()
 
-    jacobian = sampleBootstrappingSolver._getJacobianOfCurveDiscountFactors()
-    curve.setJacobian(jacobian)
+    # jacobian = sampleBootstrappingSolver._getJacobianOfCurveDiscountFactors()
+    # curve.setJacobian(jacobian)
 
     parRate = InterestRateSwap(
         fixedRate=0.,
