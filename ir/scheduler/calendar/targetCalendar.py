@@ -1,6 +1,6 @@
-import datetime
-
 from workalendar.europe import EuropeanCentralBank
+
+import datetime
 
 from ir.scheduler.calendar.genericCalendar import GenericCalendar
 

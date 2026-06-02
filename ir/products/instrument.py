@@ -1,7 +1,7 @@
-import numpy
-
 from abc import ABC, abstractmethod
 from typing import Optional
+
+import numpy
 
 from ir.curve.genericCurve import GenericCurve
 from ir.dualNumbers.dualNumber import DualNumber
@@ -26,28 +26,29 @@ class Instrument(ABC):
         if not isinstance(discountCurve._values[-1], DualNumber):
             raise ValueError('Use DualNumber with discountCurve')
         # TODO multicurve?
-        dualNpv: DualNumber = \
+        npv: DualNumber = \
             self.npv(discountCurve=discountCurve, forwardCurve=forwardCurve)
 
-        if len(list(dualNpv.dualPart.keys())) != discountCurve.getJacobian().shape[-1]:
-
+        if len(list(npv.dualPart.keys())) != discountCurve.getJacobian().shape[-1]:
             npvDualComponentsNames = [
                 int(dualName.split('v')[-1])
-                for dualName in dualNpv.dualPart.keys()
+                for dualName in npv.dualPart.keys()
             ]
-
-            dualNpv = DualNumber(
-                realPart=dualNpv.realPart,
+            # correcting npv dual part with zero values for missing components
+            npv = DualNumber(
+                realPart=npv.realPart,
                 dualPart={
                     f'v{dualPartIndex}': 0.
                     if dualPartIndex not in npvDualComponentsNames
-                    else dualNpv.dualPart.get(f'v{dualPartIndex}')
-                    for dualPartIndex in range(max(npvDualComponentsNames) + 1)
+                    else npv.dualPart.get(f'v{dualPartIndex}')
+                    for dualPartIndex in range(
+                        discountCurve.getJacobian().shape[-1]
+                    )
                 }
             )
 
         # TODO sth strange in scaling
         return numpy.matmul(
             discountCurve.getJacobian(),
-            numpy.array(list(dualNpv.dualPart.values()))[None].transpose()
+            numpy.array(list(npv.dualPart.values()))[None].transpose()
         )

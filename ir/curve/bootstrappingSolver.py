@@ -1,10 +1,9 @@
-import warnings
-
 from datetime import date
 from typing import List, Dict, Tuple, Optional
 from numpy.typing import NDArray
 
 import numpy as np
+import warnings
 
 from ir.curve.discountCurve import DiscountCurve
 from ir.curve.genericCurve import GenericCurve
@@ -199,7 +198,7 @@ class BootstrappingSolver:
         else:
             raise ValueError("unknown solver method")
 
-    def solve(self) -> Tuple[GenericCurve, bool]:
+    def solve(self, setJacobian: bool = True) -> Tuple[GenericCurve, bool]:
         maxIterations = 2000
         tolerance = 1e-16
         previousObjectiveValue = 1e10
@@ -221,6 +220,10 @@ class BootstrappingSolver:
             previousObjectiveValue = objectiveValue.realPart
 
         self._regularizationParameter = 1000
+        if setJacobian:
+            solutionCurve.setJacobian(
+                self._getJacobianOfCurveDiscountFactors()
+            )
         return solutionCurve, isSuccessConvergence
 
     def _getJacobianOfCurveDiscountFactors(self) -> FloatVectorType:
@@ -229,7 +232,7 @@ class BootstrappingSolver:
         jacobian = np.zeros(
             shape=(len(self._instruments), self._nodePointLength + 1)
         )
-        originalCurve, status = self.solve()
+        originalCurve, status = self.solve(setJacobian=False)
         for instrumentIndex in range(len(self._instruments)):
             bumpedQuotes = self._instrumentsQuotes.squeeze().tolist().copy()
             bumpedQuotes[instrumentIndex] += bumpSize
@@ -241,7 +244,7 @@ class BootstrappingSolver:
                 dayCounter=self._curveDayCounter,
                 curveInterpolator=self._curveInterpolator,
                 discountCurve=self._discountCurve
-            ).solve()
+            ).solve(setJacobian=False)
 
             # for local schemes jacobian will be diagonal (e.g. log-discounts)
             # for non-local schemes such as splines will be non-diagonal
@@ -254,5 +257,5 @@ class BootstrappingSolver:
                     ) / bumpSize
                 )
             ])
-
-        return jacobian
+        # 1e-4 scaling to calculate pv01
+        return 1e-4 * jacobian

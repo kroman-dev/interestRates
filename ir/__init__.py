@@ -1,10 +1,12 @@
 from ir.curve.bootstrappingSolver import BootstrappingSolver
 from ir.curve.discountCurve import DiscountCurve
 from ir.curve.interpolator.logLinearInterpolator import LogLinearInterpolator
+from ir.index.ruonia import Ruonia
 
 from ir.products.deposit import Deposit
 from ir.products.forwardRateAgreement import ForwardRateAgreement
 from ir.products.interestRateSwap import InterestRateSwap
+from ir.products.overnightIndexSwap import OvernightIndexSwap
 from ir.scheduler.businessDayConvention.following import Following
 from ir.scheduler.businessDayConvention.modifiedFollowing \
     import ModifiedFollowing
@@ -30,5 +32,7 @@ __all__ = [
     "Act365Fixed",
     "Thirty360BondBasis",
     "LogLinearInterpolator",
-    "TargetCalendar"
+    "TargetCalendar",
+    "OvernightIndexSwap",
+    "Ruonia"
 ]

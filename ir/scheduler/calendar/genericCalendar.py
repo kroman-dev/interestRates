@@ -1,6 +1,7 @@
-import datetime
 from abc import ABC, abstractmethod
 from typing import List
+
+import datetime
 
 from ir.scheduler.businessDayConvention.genericBusinessDayConvention import \
     GenericBusinessDayConvention

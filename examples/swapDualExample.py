@@ -8,6 +8,7 @@ from ir.scheduler.businessDayConvention.noConvention import NoConvention
 from ir.scheduler.calendar.noCalendar import NoCalendar
 from ir.scheduler.stubPeriod.shortBack import ShortBack
 
+
 if __name__ == '__main__':
     dayCounter = Act365Fixed
     effectiveDate = date(2022, 2, 14)
